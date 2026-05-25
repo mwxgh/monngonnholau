@@ -1,0 +1,22 @@
+{
+  "name": "email",
+  "version": "0.0.0",
+  "private": true,
+  "main": "./src/index.ts",
+  "scripts": {
+    "dev": "email dev --dir src/templates --port 3002",
+    "build": "email build --dir src/templates",
+    "check-types": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@react-email/components": "latest",
+    "react": "^19.2.0",
+    "react-email": "latest"
+  },
+  "devDependencies": {
+    "@react-email/ui": "6.3.2",
+    "@repo/typescript-config": "workspace:*",
+    "@types/react": "19.2.2",
+    "typescript": "5.9.2"
+  }
+}
