@@ -17,6 +17,7 @@ import { ShippingModule } from './shipping/shipping.module.js';
 import { UploadModule } from './upload/upload.module.js';
 import { UsersModule } from './users/users.module.js';
 import { WishlistModule } from './wishlist/wishlist.module.js';
+import { ChatModule } from './chat/chat.module.js';
 
 @Module({
   imports: [
@@ -35,6 +36,7 @@ import { WishlistModule } from './wishlist/wishlist.module.js';
     NotificationsModule,
     UploadModule,
     MailModule,
+    ChatModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },

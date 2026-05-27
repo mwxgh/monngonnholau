@@ -1,116 +1,73 @@
 import Image from "next/image";
 import Link from "next/link";
-import { ShoppingCart, ArrowRight, Leaf } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 
-const products = [
+const featuresData = [
   {
-    id: 1,
-    name: "Bơ Lạc Thủ Công",
-    description: "Rang mộc 100% lạc ta, không đường, không dầu thực vật.",
-    price: 85000,
-    weight: "250g",
-    image: "https://images.unsplash.com/photo-1589782182703-2aaa69037b5b?w=600&q=80&auto=format&fit=crop",
-    tag: "Bán chạy",
+    imgSrc: "/images/Features/featureOne.svg",
+    heading: "Đa dạng thực đơn",
+    subheading: "Bơ lạc, hạt điều, khô sấy, mắm tép — đầy đủ khẩu vị",
   },
   {
-    id: 2,
-    name: "Bơ Hạt Điều",
-    description: "Hạt điều rang vàng, mịn mượt, béo ngậy tự nhiên.",
-    price: 120000,
-    weight: "250g",
-    image: "https://images.unsplash.com/photo-1608797178974-15b35a64ede9?w=600&q=80&auto=format&fit=crop",
-    tag: "Yêu thích",
+    imgSrc: "/images/Features/featureTwo.svg",
+    heading: "Nguyên liệu sạch",
+    subheading: "100% tự nhiên, không chất bảo quản, không phụ gia",
   },
   {
-    id: 3,
-    name: "Thịt Lợn Khô",
-    description: "Thịt nạc thăn sấy khô, ướp gia vị gia truyền.",
-    price: 180000,
-    weight: "100g",
-    image: "https://images.unsplash.com/photo-1621478374422-35206faeddfb?w=600&q=80&auto=format&fit=crop",
-    tag: null,
+    imgSrc: "/images/Features/featureThree.svg",
+    heading: "Mẹ tự tay làm",
+    subheading: "Từng mẻ nhỏ được chăm chút như nấu cho gia đình",
   },
   {
-    id: 4,
-    name: "Chuối Sấy Mộc",
-    description: "Chuối tiêu sấy khô tự nhiên, không đường, không phụ gia.",
-    price: 55000,
-    weight: "200g",
-    image: "https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=600&q=80&auto=format&fit=crop",
-    tag: "Mới",
+    imgSrc: "/images/Features/featureFour.svg",
+    heading: "Giao hàng nhanh",
+    subheading: "Đóng gói cẩn thận, giao tận tay toàn quốc 1–2 ngày",
   },
 ];
 
-const fmt = (n: number) => new Intl.NumberFormat("vi-VN").format(n) + "đ";
-
 export function FeaturedProducts() {
   return (
-    <section className="py-20 bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        {/* Header */}
-        <div className="flex items-end justify-between mb-10">
-          <div>
-            <p className="text-orange-500 text-xs font-semibold uppercase tracking-widest mb-2">
-              Nổi bật
-            </p>
-            <h2
-              className="text-4xl sm:text-5xl font-black text-gray-900"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              Được yêu thích nhất
-            </h2>
-          </div>
-          <Link
-            href="/products"
-            className="hidden sm:flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-900 font-medium transition-colors"
-          >
-            Tất cả <ArrowRight className="w-3.5 h-3.5" />
-          </Link>
+    <section>
+      <div
+        className="container mx-auto max-w-7xl px-4"
+        id="about-section"
+      >
+        <div className="text-center mb-14">
+          <p className="text-primary text-lg font-normal mb-3 tracking-widest uppercase">
+            Đặc điểm nổi bật
+          </p>
+          <h2 className="text-3xl lg:text-5xl font-semibold text-black max-w-lg mx-auto">
+            Nhiều điều thú vị đang chờ bạn.
+          </h2>
         </div>
-
-        {/* Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          {products.map((p) => (
+        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-y-20 gap-x-5 mt-32">
+          {featuresData.map((item, i) => (
             <div
-              key={p.id}
-              className="group bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col"
+              key={i}
+              className="p-8 relative rounded-3xl bg-linear-to-b from-black/5 to-white"
             >
-              {/* Image */}
-              <div className="relative h-48 overflow-hidden bg-gray-100">
+              <div className="rounded-full flex justify-center absolute top-[-45%] left-0 w-full">
                 <Image
-                  src={p.image}
-                  alt={p.name}
-                  fill
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                  className="object-cover transition-transform duration-500 group-hover:scale-105"
+                  src={item.imgSrc}
+                  alt={item.heading}
+                  width={200}
+                  height={200}
                 />
-                {p.tag && (
-                  <span className="absolute top-3 left-3 bg-orange-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full">
-                    {p.tag}
-                  </span>
-                )}
               </div>
-
-              {/* Info */}
-              <div className="p-5 flex flex-col flex-1">
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-[11px] text-gray-400 bg-gray-100 px-2 py-0.5 rounded-full">
-                    {p.weight}
-                  </span>
-                  <span className="flex items-center gap-1 text-[11px] text-green-600 font-medium">
-                    <Leaf className="w-3 h-3" /> Tự nhiên
-                  </span>
-                </div>
-                <h3 className="font-bold text-gray-900 text-sm mb-1">{p.name}</h3>
-                <p className="text-gray-400 text-xs leading-relaxed flex-1 mb-4">
-                  {p.description}
-                </p>
-                <div className="flex items-center justify-between">
-                  <span className="text-lg font-black text-gray-900">{fmt(p.price)}</span>
-                  <button className="w-9 h-9 rounded-lg bg-gray-100 hover:bg-orange-500 text-gray-600 hover:text-white flex items-center justify-center transition-colors">
-                    <ShoppingCart className="w-4 h-4" />
-                  </button>
-                </div>
+              <h3 className="text-2xl text-black font-semibold text-center mt-16">
+                {item.heading}
+              </h3>
+              <p className="text-lg font-normal text-black/50 text-center mt-2">
+                {item.subheading}
+              </p>
+              <div className="flex items-center justify-center">
+                <Link
+                  href="#cook-section"
+                  className="text-center text-lg font-medium text-primary mt-2 flex items-center gap-1 hover:underline"
+                >
+                  Tìm hiểu thêm
+                  <ChevronRight className="w-5 h-5" />
+                </Link>
               </div>
             </div>
           ))}

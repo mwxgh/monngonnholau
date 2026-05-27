@@ -28,13 +28,16 @@ export class AuthController {
   }
 
   @Get('me')
-  me(@CurrentUser() user: any) {
+  me(@CurrentUser() user: unknown) {
     return user;
   }
 
   @UseGuards(JwtRefreshGuard)
   @Post('refresh')
-  refresh(@CurrentUser() user: any, @Res({ passthrough: true }) res: Response) {
+  refresh(
+    @CurrentUser() user: unknown,
+    @Res({ passthrough: true }) res: Response,
+  ) {
     return this.authService.refresh(user, res);
   }
 
@@ -56,7 +59,11 @@ export class AuthController {
     @CurrentUser() profile: GoogleProfile,
     @Res({ passthrough: true }) res: Response,
   ) {
-    return this.authService.handleOAuthLogin(profile, OAuthProvider.GOOGLE, res);
+    return this.authService.handleOAuthLogin(
+      profile,
+      OAuthProvider.GOOGLE,
+      res,
+    );
   }
 
   // Facebook OAuth
@@ -72,6 +79,10 @@ export class AuthController {
     @CurrentUser() profile: FacebookProfile,
     @Res({ passthrough: true }) res: Response,
   ) {
-    return this.authService.handleOAuthLogin(profile, OAuthProvider.FACEBOOK, res);
+    return this.authService.handleOAuthLogin(
+      profile,
+      OAuthProvider.FACEBOOK,
+      res,
+    );
   }
 }

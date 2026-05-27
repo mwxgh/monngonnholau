@@ -69,6 +69,8 @@ model User {
   wishlist      Wishlist[]
   cart          Cart?
   notifications Notification[]
+  conversations Conversation[]
+  messages      Message[]
 }
 
 model OAuthAccount {
@@ -303,4 +305,32 @@ model CartItem {
   updatedAt DateTime       @updatedAt
 
   @@unique([cartId, variantId])
+}
+
+// ==================== CHAT ====================
+
+enum ConversationStatus {
+  OPEN
+  CLOSED
+}
+
+model Conversation {
+  id        Int                @id @default(autoincrement())
+  userId    Int
+  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  status    ConversationStatus @default(OPEN)
+  messages  Message[]
+  createdAt DateTime           @default(now())
+  updatedAt DateTime           @updatedAt
+}
+
+model Message {
+  id             Int          @id @default(autoincrement())
+  conversationId Int
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  senderId       Int
+  sender         User         @relation(fields: [senderId], references: [id])
+  content        String
+  isRead         Boolean      @default(false)
+  createdAt      DateTime     @default(now())
 }

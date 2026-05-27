@@ -1,66 +1,50 @@
-import { Search, ShoppingBag, Truck } from "lucide-react";
+import Image from "next/image";
 import Link from "next/link";
-
-const steps = [
-  {
-    step: "01",
-    icon: Search,
-    title: "Chọn sản phẩm",
-    description: "Duyệt danh sách sản phẩm thủ công, đọc mô tả nguyên liệu và chọn những gì bạn muốn.",
-  },
-  {
-    step: "02",
-    icon: ShoppingBag,
-    title: "Đặt hàng dễ dàng",
-    description: "Thêm vào giỏ, điền địa chỉ giao hàng và thanh toán an toàn chỉ vài bước đơn giản.",
-  },
-  {
-    step: "03",
-    icon: Truck,
-    title: "Nhận hàng tận nơi",
-    description: "Đóng gói cẩn thận, giao tận tay trong vòng 1–2 ngày.",
-  },
-];
 
 export function HowItWorks() {
   return (
-    <section className="py-20 bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-12 gap-4">
-          <div>
-            <p className="text-orange-500 text-xs font-semibold uppercase tracking-widest mb-2">
-              Cách đặt hàng
-            </p>
-            <h2
-              className="text-4xl sm:text-5xl font-black text-gray-900"
-              style={{ fontFamily: "var(--font-display)" }}
-            >
-              Chỉ 3 bước đơn giản
-            </h2>
-          </div>
-          <Link
-            href="/products"
-            className="inline-flex items-center gap-2 bg-gray-900 hover:bg-orange-500 text-white font-semibold px-6 py-3 rounded-lg transition-colors text-sm"
-          >
-            Mua ngay →
-          </Link>
+    <section className="relative" id="cook-section">
+      <div className="container mx-auto max-w-7xl px-4">
+        <div className="absolute right-0 bottom-[-18%] hidden lg:block">
+          <Image
+            src="/images/cook/burger.png"
+            alt="burger"
+            width={463}
+            height={622}
+          />
         </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-          {steps.map(({ step, icon: Icon, title, description }) => (
-            <div key={step} className="bg-white rounded-2xl p-8 shadow-sm">
-              <div className="flex items-center gap-3 mb-5">
-                <div className="w-11 h-11 rounded-xl bg-orange-50 flex items-center justify-center shrink-0">
-                  <Icon className="w-5 h-5 text-orange-500" />
-                </div>
-                <span className="text-4xl font-black text-gray-100" style={{ fontFamily: "var(--font-display)" }}>
-                  {step}
-                </span>
-              </div>
-              <h3 className="font-bold text-gray-900 mb-2">{title}</h3>
-              <p className="text-gray-500 text-sm leading-relaxed">{description}</p>
-            </div>
-          ))}
+        <div className="grid grid-cols-1 lg:grid-cols-12 my-16 space-x-5">
+          <div className="col-span-6 flex justify-start">
+            <Image
+              src="/images/cook/cook.png"
+              alt="cook"
+              width={636}
+              height={808}
+            />
+          </div>
+          <div className="col-span-6 flex flex-col justify-center">
+            <p className="text-primary text-lg font-normal mb-3 tracking-widest uppercase text-start">
+              nấu cùng chúng tôi
+            </p>
+            <h2 className="text-3xl lg:text-5xl font-semibold text-black text-start">
+              Nấu ngon cùng những người thợ lành nghề.
+            </h2>
+            <p className="text-black/50 md:text-lg font-normal mb-10 text-start mt-2">
+              Mỗi sản phẩm là cả một hành trình — từ chọn nguyên liệu, rang tay,
+              xay thủ công đến đóng gói cẩn thận. Không dây chuyền, không đại
+              trà, chỉ là tình yêu và sự tỉ mỉ.
+            </p>
+            <p className="text-black/50 md:text-lg font-normal mb-10 text-start mt-1">
+              Chúng tôi tin rằng đồ ăn ngon nhất là đồ được làm bằng tâm — như
+              mẹ vẫn làm cho cả gia đình mỗi ngày....
+            </p>
+            <Link
+              href="#gallery-section"
+              className="text-xl font-medium rounded-full text-white py-5 px-6 bg-primary lg:px-10 mr-6 w-fit border border-primary hover:bg-transparent hover:text-primary"
+            >
+              Tìm hiểu thêm
+            </Link>
+          </div>
         </div>
       </div>
     </section>

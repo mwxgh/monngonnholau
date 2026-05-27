@@ -1,24 +1,61 @@
-const stats = [
-  { value: "200+", label: "Khách hàng hài lòng" },
-  { value: "4.9★", label: "Đánh giá trung bình" },
-  { value: "7+", label: "Sản phẩm thủ công" },
-  { value: "100%", label: "Không chất bảo quản" },
+import Image from "next/image";
+import Link from "next/link";
+
+const galleryImages = [
+  { src: "/images/Gallery/foodone.jpg", name: "Caesar Salad (187 Kcal)", price: "35.000đ" },
+  { src: "/images/Gallery/foodtwo.jpg", name: "Salad Giáng Sinh (118 Kcal)", price: "17.000đ" },
+  { src: "/images/Gallery/foodthree.jpg", name: "Nấm xào bí đao ớt ngọt (238 kcal)", price: "45.000đ" },
+  { src: "/images/Gallery/foodfour.jpg", name: "BBQ Chicken Pizza (272 kcal)", price: "27.000đ" },
 ];
 
 export function Stats() {
   return (
-    <section className="py-14 bg-orange-500">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-8">
-          {stats.map(({ value, label }, i) => (
-            <div
-              key={label}
-              className={`text-center ${i < stats.length - 1 ? "lg:border-r lg:border-orange-400/40" : ""}`}
-            >
-              <div className="text-4xl font-black text-white mb-1">{value}</div>
-              <div className="text-orange-100 text-sm">{label}</div>
-            </div>
-          ))}
+    <section>
+      <div
+        className="container mx-auto max-w-7xl px-4"
+        id="gallery-section"
+      >
+        <div className="text-center">
+          <p className="text-primary text-lg font-normal mb-3 tracking-widest uppercase">
+            Thư viện ảnh
+          </p>
+          <h2 className="text-3xl lg:text-5xl font-semibold text-black">
+            Những món ăn do chúng tôi chế biến.
+          </h2>
+        </div>
+        <div className="my-16 px-6">
+          <div className="columns-1 sm:columns-2 gap-6">
+            {galleryImages.map((item, index) => (
+              <div
+                key={index}
+                className="overflow-hidden rounded-3xl mb-6 relative group break-inside-avoid"
+              >
+                <Image
+                  src={item.src}
+                  alt={item.name}
+                  width={600}
+                  height={500}
+                  className="object-cover w-full h-full"
+                />
+                <div className="w-full h-full absolute bg-black/40 top-full group-hover:top-0 duration-500 p-12 flex flex-col items-start gap-8 justify-end">
+                  <p className="text-white text-2xl">
+                    <span className="font-semibold">Tên:</span> {item.name}
+                  </p>
+                  <div className="flex items-center justify-between w-full">
+                    <p className="text-white text-2xl">
+                      <span className="font-semibold">Giá:</span> {item.price}
+                    </p>
+                    <Link
+                      href="#"
+                      className="text-white rounded-full bg-primary border border-primary py-2 px-6 hover:bg-primary/40 hover:backdrop-blur-sm"
+                    >
+                      Tìm hiểu thêm
+                    </Link>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </div>
     </section>

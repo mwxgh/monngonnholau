@@ -15,6 +15,14 @@ import { RegisterDto } from './dto/register.dto.js';
 import type { FacebookProfile } from './strategies/facebook.strategy.js';
 import type { GoogleProfile } from './strategies/google.strategy.js';
 
+interface TokenUser {
+  id: number;
+  email: string;
+  role: string;
+  password?: string | null;
+  [key: string]: unknown;
+}
+
 @Injectable()
 export class AuthService {
   constructor(
@@ -38,10 +46,12 @@ export class AuthService {
 
   async login(dto: LoginDto, res: Response) {
     const user = await this.usersService.findByEmail(dto.email);
-    if (!user?.password) throw new UnauthorizedException('Email hoặc mật khẩu không đúng');
+    if (!user?.password)
+      throw new UnauthorizedException('Email hoặc mật khẩu không đúng');
 
     const valid = await bcrypt.compare(dto.password, user.password);
-    if (!valid) throw new UnauthorizedException('Email hoặc mật khẩu không đúng');
+    if (!valid)
+      throw new UnauthorizedException('Email hoặc mật khẩu không đúng');
 
     if (!user.isActive) throw new UnauthorizedException('Tài khoản đã bị khóa');
 
@@ -68,7 +78,9 @@ export class AuthService {
       });
     } else {
       const linked = await this.prisma.oAuthAccount.findUnique({
-        where: { provider_providerId: { provider, providerId: profile.providerId } },
+        where: {
+          provider_providerId: { provider, providerId: profile.providerId },
+        },
       });
       if (!linked) {
         await this.prisma.oAuthAccount.create({
@@ -80,8 +92,8 @@ export class AuthService {
     return this.issueTokens(user, res);
   }
 
-  refresh(user: any, res: Response) {
-    return this.issueTokens(user, res);
+  refresh(user: unknown, res: Response) {
+    return this.issueTokens(user as TokenUser, res);
   }
 
   logout(res: Response) {
@@ -89,7 +101,7 @@ export class AuthService {
     return { message: 'Đăng xuất thành công' };
   }
 
-  private issueTokens(user: any, res: Response) {
+  private issueTokens(user: TokenUser, res: Response) {
     const payload = { sub: user.id, email: user.email, role: user.role };
 
     const accessToken = this.jwtService.sign(payload, {
@@ -109,7 +121,7 @@ export class AuthService {
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 ngày
     });
 
-    const { password: _, ...safeUser } = user;
+    const { password: _pw, ...safeUser } = user;
     return { accessToken, user: safeUser };
   }
 }

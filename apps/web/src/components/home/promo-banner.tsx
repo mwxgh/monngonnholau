@@ -1,64 +1,82 @@
+"use client";
+
 import Image from "next/image";
-import Link from "next/link";
+import { ArrowRight } from "lucide-react";
 
 export function PromoBanner() {
   return (
-    <section className="py-16 bg-gray-50">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6">
-        <div className="relative overflow-hidden rounded-3xl grid lg:grid-cols-2 min-h-80 bg-gray-900">
-          {/* Left */}
-          <div className="relative z-10 p-10 lg:p-14 flex flex-col justify-between">
-            <p className="text-orange-400 text-xs font-semibold uppercase tracking-widest">
-              Cam kết của chúng tôi
-            </p>
-            <div>
-              <h2
-                className="text-4xl sm:text-5xl font-black text-white leading-tight mb-5"
-                style={{ fontFamily: "var(--font-display)" }}
-              >
-                Làm ít,<br />
-                làm kỹ,<br />
-                làm bằng tâm.
-              </h2>
-              <p className="text-gray-400 text-sm leading-relaxed mb-8 max-w-xs">
-                Không vội vã, không đại trà. Chỉ những mẻ nhỏ — đủ chăm chút, đủ yêu thương.
+    <section className="relative">
+      <div className="container mx-auto max-w-7xl px-4">
+        <div className="bg-primary rounded-[30px_400px_30px_30px] grid grid-cols-1 gap-y-10 gap-x-6 md:grid-cols-12 xl:gap-x-8">
+          <div className="col-span-7">
+            <div className="m-10 lg:ml-32 lg:mt-20 lg:mb-20">
+              <p className="text-lg font-normal text-white mb-3 tracking-widest uppercase">
+                BẢN TIN
               </p>
-              <Link
-                href="/products"
-                className="inline-flex items-center gap-2 bg-orange-500 hover:bg-orange-600 text-white font-semibold px-7 py-3 rounded-lg transition-colors text-sm"
-              >
-                Mua ngay →
-              </Link>
+              <h2 className="text-3xl md:text-5xl font-semibold text-white mb-8">
+                Đăng ký nhận <br /> bản tin của chúng tôi.
+              </h2>
+              <div>
+                <div className="relative text-white focus-within:text-white flex flex-row-reverse shadow-lg rounded-full">
+                  <input
+                    type="email"
+                    className="py-6 sm:py-8 text-sm w-full text-black rounded-full pl-4 pr-16 focus:outline-none focus:text-black"
+                    placeholder="@ nhập địa chỉ email của bạn"
+                    autoComplete="off"
+                  />
+                  <div className="absolute inset-y-0 right-0 flex items-center pr-2">
+                    <button
+                      type="submit"
+                      className="p-2 bg-gray-900 hover:scale-110 duration-300 rounded-full"
+                    >
+                      <ArrowRight className="w-8 h-8 text-white" />
+                    </button>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-
-          {/* Right image */}
-          <div className="relative hidden lg:block">
-            <Image
-              src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=800&q=85&auto=format&fit=crop"
-              alt="Nguyên liệu tươi sạch"
-              fill
-              sizes="50vw"
-              className="object-cover opacity-50"
-            />
-            <div className="absolute inset-0 bg-linear-to-r from-gray-900 via-gray-900/30 to-transparent" />
-
-            <div className="absolute bottom-10 right-8 flex flex-col gap-3">
-              {[
-                { val: "0%", text: "Chất bảo quản" },
-                { val: "100%", text: "Tự nhiên" },
-                { val: "♡", text: "Mẹ tự tay làm" },
-              ].map(({ val, text }) => (
-                <div
-                  key={text}
-                  className="flex items-center gap-3 bg-white/10 backdrop-blur-sm border border-white/10 rounded-xl px-4 py-2.5"
-                >
-                  <span className="text-orange-400 font-black text-base w-12 text-center">
-                    {val}
-                  </span>
-                  <span className="text-white/70 text-xs">{text}</span>
-                </div>
-              ))}
+          <div className="col-span-5 relative hidden md:block">
+            <div>
+              <Image
+                src="/images/Newsletter/soup.svg"
+                alt="soup"
+                width={626}
+                height={602}
+                className="-mt-24"
+              />
+            </div>
+            <div className="absolute top-[78%]">
+              <Image
+                src="/images/Newsletter/onion.svg"
+                alt="onion"
+                width={300}
+                height={122}
+              />
+            </div>
+            <div className="absolute top-[30%] right-[-23%] hidden lg:block">
+              <Image
+                src="/images/Newsletter/lec.svg"
+                alt="lettuce"
+                width={300}
+                height={122}
+              />
+            </div>
+            <div className="absolute bottom-[10%] left-0">
+              <Image
+                src="/images/Newsletter/yellow.svg"
+                alt="yellow"
+                width={59}
+                height={59}
+              />
+            </div>
+            <div className="absolute bottom-[20%] right-[20%]">
+              <Image
+                src="/images/Newsletter/blue.svg"
+                alt="blue"
+                width={25}
+                height={25}
+              />
             </div>
           </div>
         </div>
