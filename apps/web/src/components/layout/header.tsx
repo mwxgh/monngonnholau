@@ -1,5 +1,6 @@
 "use client";
 
+import { staticUrl } from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
@@ -39,30 +40,29 @@ export function Header() {
 
   useEffect(() => {
     document.body.style.overflow = navbarOpen ? "hidden" : "";
-    return () => { document.body.style.overflow = ""; };
+    return () => {
+      document.body.style.overflow = "";
+    };
   }, [navbarOpen]);
 
   return (
     <header
-      className={`fixed top-0 z-40 w-full transition-all duration-300 ${
-        sticky ? "shadow-lg bg-white py-4" : "shadow-none py-8"
+      className={`fixed top-0 z-40 w-full bg-white py-1 transition-all duration-300 ${
+        sticky ? "shadow-lg" : "shadow-sm"
       }`}
     >
       <div className="lg:py-0 py-2">
         <div className="container mx-auto max-w-7xl px-4 flex items-center justify-between">
           {/* Logo */}
-          <Link
-            href="/"
-            className="flex items-center text-black text-2xl font-semibold gap-4"
-          >
+          <Link href="/" className="flex items-center">
             <Image
-              src="/images/logo/Logo.svg"
-              alt="logo"
-              width={56}
-              height={56}
-              style={{ width: "auto", height: "auto" }}
+              src={staticUrl("images/logo.png")}
+              alt="Món Ngon Nhớ Lâu"
+              width={200}
+              height={64}
+              priority
+              style={{ height: "4rem", width: "auto" }}
             />
-            Mon Ngon Nho Lau
           </Link>
 
           {/* Desktop nav */}
@@ -81,21 +81,18 @@ export function Header() {
           {/* Desktop right */}
           <div className="hidden lg:flex items-center gap-4">
             <Link
-              href="tel:+84900000000"
+              href="tel:+84869863088"
               className="text-lg font-medium hover:text-primary flex items-center gap-2"
             >
               <Phone className="text-primary w-6 h-6 inline-block mr-1" />
-              0900 000 000
+              0869 863 088
             </Link>
-            <Link
-              href="#cook-section"
-              className="hidden lg:block text-primary bg-primary/15 hover:text-white hover:bg-primary font-medium text-lg py-4 px-8 rounded-full"
-            >
+            <Link href="#cook-section" className="hidden lg:inline-flex btn-outline">
               Xem thực đơn
             </Link>
             <Link
               href="#gallery-section"
-              className="hidden lg:block bg-primary text-white hover:bg-primary/15 hover:text-primary font-medium text-lg py-4 px-8 rounded-full"
+              className="hidden lg:inline-flex btn-primary"
             >
               Đặt hàng
             </Link>
@@ -114,9 +111,7 @@ export function Header() {
         </div>
 
         {/* Mobile overlay */}
-        {navbarOpen && (
-          <div className="fixed inset-0 bg-black/50 z-40" />
-        )}
+        {navbarOpen && <div className="fixed inset-0 bg-black/50 z-40" />}
 
         {/* Mobile drawer */}
         <div
@@ -126,17 +121,14 @@ export function Header() {
           }`}
         >
           <div className="flex items-center justify-between p-4">
-            <Link
-              href="/"
-              className="flex items-center text-white text-xl font-semibold gap-3"
-            >
+            <Link href="/" className="flex items-center">
               <Image
-                src="/images/logo/Logo.svg"
-                alt="logo"
+                src={staticUrl("images/logo.png")}
+                alt="Món Ngon Nhớ Lâu"
                 width={40}
                 height={40}
+                style={{ width: "auto", height: "auto" }}
               />
-              Mon Ngon Nho Lau
             </Link>
             <button
               onClick={() => setNavbarOpen(false)}
@@ -144,11 +136,12 @@ export function Header() {
               aria-label="Close menu"
             >
               <Image
-                src="/images/closed.svg"
+                src={staticUrl("images/closed.svg")}
                 alt="close"
                 width={20}
                 height={20}
                 className="invert"
+                style={{ width: "auto", height: "auto" }}
               />
             </button>
           </div>

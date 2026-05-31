@@ -1,14 +1,39 @@
 "use client";
+import { staticUrl } from "@/lib/utils";
 
 import Image from "next/image";
 
 const expertData = [
-  { profession: "Bếp trưởng", name: "Nguyễn Văn An", imgSrc: "/images/Expert/boyone.svg" },
-  { profession: "Bếp phó", name: "Trần Thị Lan", imgSrc: "/images/Expert/girl.png" },
-  { profession: "Bếp phó", name: "Lê Minh Tuấn", imgSrc: "/images/Expert/boytwo.svg" },
-  { profession: "Bếp phó", name: "Phạm Thu Hà", imgSrc: "/images/Expert/girl.png" },
-  { profession: "Bếp trưởng", name: "Hoàng Đức Nam", imgSrc: "/images/Expert/boyone.svg" },
-  { profession: "Bếp phó", name: "Vũ Quang Huy", imgSrc: "/images/Expert/boytwo.svg" },
+  {
+    profession: "Bếp trưởng",
+    name: "Nguyễn Văn An",
+    imgSrc: staticUrl("images/boyone.svg"),
+  },
+  {
+    profession: "Bếp phó",
+    name: "Trần Thị Lan",
+    imgSrc: staticUrl("images/girl.png"),
+  },
+  {
+    profession: "Bếp phó",
+    name: "Lê Minh Tuấn",
+    imgSrc: staticUrl("images/boytwo.svg"),
+  },
+  {
+    profession: "Bếp phó",
+    name: "Phạm Thu Hà",
+    imgSrc: staticUrl("images/girl.png"),
+  },
+  {
+    profession: "Bếp trưởng",
+    name: "Hoàng Đức Nam",
+    imgSrc: staticUrl("images/boyone.svg"),
+  },
+  {
+    profession: "Bếp phó",
+    name: "Vũ Quang Huy",
+    imgSrc: staticUrl("images/boytwo.svg"),
+  },
 ];
 
 export function Testimonials() {
@@ -35,17 +60,21 @@ export function Testimonials() {
                       width={362}
                       height={262}
                       className="inline-block m-auto"
+                      style={{ width: "auto", height: "auto" }}
                     />
                     <div className="absolute top-1/2 right-[2%]">
                       <Image
-                        src="/images/Expert/Linkedin.svg"
+                        src={staticUrl("images/Linkedin.svg")}
                         alt="linkedin"
                         width={220}
                         height={120}
+                        style={{ width: "auto", height: "auto" }}
                       />
                     </div>
                   </div>
-                  <h3 className="text-2xl font-semibold text-black">{item.name}</h3>
+                  <h3 className="text-2xl font-semibold text-black">
+                    {item.name}
+                  </h3>
                   <h4 className="text-lg font-normal text-black/50 pt-4 pb-2">
                     {item.profession}
                   </h4>

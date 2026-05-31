@@ -1,4 +1,5 @@
 "use client";
+import { staticUrl } from "@/lib/utils";
 
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
@@ -37,45 +38,49 @@ export function PromoBanner() {
             </div>
           </div>
           <div className="col-span-5 relative hidden md:block">
-            <div>
+            <div className="-mt-24">
               <Image
-                src="/images/Newsletter/soup.svg"
+                src={staticUrl("images/soup.svg")}
                 alt="soup"
                 width={626}
                 height={602}
-                className="-mt-24"
+                style={{ width: "100%", height: "auto" }}
               />
             </div>
             <div className="absolute top-[78%]">
               <Image
-                src="/images/Newsletter/onion.svg"
+                src={staticUrl("images/onion.svg")}
                 alt="onion"
                 width={300}
                 height={122}
+                style={{ width: "auto", height: "auto" }}
               />
             </div>
             <div className="absolute top-[30%] right-[-23%] hidden lg:block">
               <Image
-                src="/images/Newsletter/lec.svg"
+                src={staticUrl("images/lec.svg")}
                 alt="lettuce"
                 width={300}
                 height={122}
+                style={{ width: "auto", height: "auto" }}
               />
             </div>
             <div className="absolute bottom-[10%] left-0">
               <Image
-                src="/images/Newsletter/yellow.svg"
+                src={staticUrl("images/yellow.svg")}
                 alt="yellow"
                 width={59}
                 height={59}
+                style={{ width: "auto", height: "auto" }}
               />
             </div>
             <div className="absolute bottom-[20%] right-[20%]">
               <Image
-                src="/images/Newsletter/blue.svg"
+                src={staticUrl("images/blue.svg")}
                 alt="blue"
                 width={25}
                 height={25}
+                style={{ width: "auto", height: "auto" }}
               />
             </div>
           </div>

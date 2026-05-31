@@ -7,25 +7,29 @@ const categories = [
     name: "Bơ & Hạt",
     description: "Bơ lạc · Bơ hạt điều · Bơ mè đen",
     count: 3,
-    image: "https://images.unsplash.com/photo-1589782182703-2aaa69037b5b?w=600&q=80&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1589782182703-2aaa69037b5b?w=600&q=80&auto=format&fit=crop",
   },
   {
     name: "Khô & Sấy",
     description: "Thịt lợn khô · Chuối sấy mộc",
     count: 2,
-    image: "https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=600&q=80&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=600&q=80&auto=format&fit=crop",
   },
   {
     name: "Nước chấm",
     description: "Nước mắm tự làm",
     count: 1,
-    image: "https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?w=600&q=80&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?w=600&q=80&auto=format&fit=crop",
   },
   {
     name: "Món mặn",
     description: "Thịt chưng mắm tép",
     count: 1,
-    image: "https://images.unsplash.com/photo-1547592180-85f173990554?w=600&q=80&auto=format&fit=crop",
+    image:
+      "https://images.unsplash.com/photo-1547592180-85f173990554?w=600&q=80&auto=format&fit=crop",
   },
 ];
 

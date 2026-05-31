@@ -49,6 +49,11 @@ enum PaymentStatus {
   REFUNDED
 }
 
+enum NotificationType {
+  ORDER_CREATED
+  ORDER_SHIPPING
+}
+
 // ==================== AUTH ====================
 
 model User {
@@ -59,9 +64,9 @@ model User {
   phone         String?
   avatar        String?
   role          Role           @default(CUSTOMER)
-  isActive      Boolean        @default(true)
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  isActive      Boolean        @default(true) @map("is_active")
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
   oauthAccounts OAuthAccount[]
   addresses     Address[]
   orders        Order[]
@@ -69,36 +74,39 @@ model User {
   wishlist      Wishlist[]
   cart          Cart?
   notifications Notification[]
-  conversations Conversation[]
-  messages      Message[]
+
+  @@map("users")
 }
 
 model OAuthAccount {
   id         Int           @id @default(autoincrement())
   provider   OAuthProvider
-  providerId String
-  userId     Int
+  providerId String        @map("provider_id")
+  userId     Int           @map("user_id")
   user       User          @relation(fields: [userId], references: [id], onDelete: Cascade)
-  createdAt  DateTime      @default(now())
+  createdAt  DateTime      @default(now()) @map("created_at")
 
   @@unique([provider, providerId])
+  @@map("oauth_accounts")
 }
 
 // ==================== ADDRESS ====================
 
 model Address {
   id        Int      @id @default(autoincrement())
-  userId    Int
+  userId    Int      @map("user_id")
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  fullName  String
+  fullName  String   @map("full_name")
   phone     String
   province  String
   district  String
   ward      String
   street    String
-  isDefault Boolean  @default(false)
-  createdAt DateTime @default(now())
+  isDefault Boolean  @default(false) @map("is_default")
+  createdAt DateTime @default(now()) @map("created_at")
   orders    Order[]
+
+  @@map("addresses")
 }
 
 // ==================== PRODUCT ====================
@@ -107,11 +115,13 @@ model Category {
   id        Int        @id @default(autoincrement())
   name      String
   slug      String     @unique
-  parentId  Int?
+  parentId  Int?       @map("parent_id")
   parent    Category?  @relation("CategoryTree", fields: [parentId], references: [id])
   children  Category[] @relation("CategoryTree")
   products  Product[]
-  createdAt DateTime   @default(now())
+  createdAt DateTime   @default(now()) @map("created_at")
+
+  @@map("categories")
 }
 
 model Product {
@@ -120,24 +130,26 @@ model Product {
   slug        String           @unique
   description String?
   images      String[]
-  categoryId  Int?
+  categoryId  Int?             @map("category_id")
   category    Category?        @relation(fields: [categoryId], references: [id])
   status      ProductStatus    @default(DRAFT)
   variants    ProductVariant[]
   wishlist    Wishlist[]
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
+  createdAt   DateTime         @default(now()) @map("created_at")
+  updatedAt   DateTime         @updatedAt @map("updated_at")
+
+  @@map("products")
 }
 
 model ProductVariant {
   id           Int                    @id @default(autoincrement())
-  productId    Int
+  productId    Int                    @map("product_id")
   product      Product                @relation(fields: [productId], references: [id], onDelete: Cascade)
   sku          String                 @unique
   name         String
   attributes   Json
   price        Decimal                @db.Decimal(12, 2)
-  comparePrice Decimal?               @db.Decimal(12, 2)
+  comparePrice Decimal?               @map("compare_price") @db.Decimal(12, 2)
   weight       Float?
   length       Float?
   width        Float?
@@ -146,31 +158,37 @@ model ProductVariant {
   transactions InventoryTransaction[]
   orderItems   OrderItem[]
   cartItems    CartItem[]
-  createdAt    DateTime               @default(now())
-  updatedAt    DateTime               @updatedAt
+  createdAt    DateTime               @default(now()) @map("created_at")
+  updatedAt    DateTime               @updatedAt @map("updated_at")
+
+  @@map("product_variants")
 }
 
 // ==================== INVENTORY ====================
 
 model Inventory {
   id        Int            @id @default(autoincrement())
-  variantId Int            @unique
+  variantId Int            @unique @map("variant_id")
   variant   ProductVariant @relation(fields: [variantId], references: [id], onDelete: Cascade)
   quantity  Int            @default(0)
-  lowStock  Int            @default(5)
-  updatedAt DateTime       @updatedAt
+  lowStock  Int            @default(5) @map("low_stock")
+  updatedAt DateTime       @updatedAt @map("updated_at")
+
+  @@map("inventories")
 }
 
 model InventoryTransaction {
   id          Int            @id @default(autoincrement())
-  variantId   Int
+  variantId   Int            @map("variant_id")
   variant     ProductVariant @relation(fields: [variantId], references: [id])
   type        InventoryType
   quantity    Int
   note        String?
-  referenceId Int?
-  createdById Int
-  createdAt   DateTime       @default(now())
+  referenceId Int?           @map("reference_id")
+  createdById Int            @map("created_by_id")
+  createdAt   DateTime       @default(now()) @map("created_at")
+
+  @@map("inventory_transactions")
 }
 
 // ==================== SHIPPING ====================
@@ -179,158 +197,141 @@ model ShippingRate {
   id          Int      @id @default(autoincrement())
   name        String
   provinces   String[]
-  baseWeight  Float
-  basePrice   Decimal  @db.Decimal(12, 2)
-  extraWeight Float
-  extraPrice  Decimal  @db.Decimal(12, 2)
-  isActive    Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  baseWeight  Float    @map("base_weight")
+  basePrice   Decimal  @map("base_price") @db.Decimal(12, 2)
+  extraWeight Float    @map("extra_weight")
+  extraPrice  Decimal  @map("extra_price") @db.Decimal(12, 2)
+  isActive    Boolean  @default(true) @map("is_active")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("shipping_rates")
 }
 
 // ==================== ORDER ====================
 
 model Order {
   id              Int                  @id @default(autoincrement())
-  userId          Int
+  userId          Int                  @map("user_id")
   user            User                 @relation(fields: [userId], references: [id])
-  addressId       Int
+  addressId       Int                  @map("address_id")
   address         Address              @relation(fields: [addressId], references: [id])
-  paymentId       Int?                 @unique
+  paymentId       Int?                 @unique @map("payment_id")
   payment         Payment?             @relation(fields: [paymentId], references: [id])
   status          OrderStatus          @default(PENDING_PAYMENT)
   note            String?
-  trackingCode    String?              @unique
+  trackingCode    String?              @unique @map("tracking_code")
   subtotal        Decimal              @db.Decimal(12, 2)
-  shippingFee     Decimal              @db.Decimal(12, 2)
+  shippingFee     Decimal              @map("shipping_fee") @db.Decimal(12, 2)
   discount        Decimal              @default(0) @db.Decimal(12, 2)
   total           Decimal              @db.Decimal(12, 2)
   items           OrderItem[]
   statusHistories OrderStatusHistory[]
-  createdAt       DateTime             @default(now())
-  updatedAt       DateTime             @updatedAt
+  createdAt       DateTime             @default(now()) @map("created_at")
+  updatedAt       DateTime             @updatedAt @map("updated_at")
+
+  @@map("orders")
 }
 
 model OrderItem {
   id        Int            @id @default(autoincrement())
-  orderId   Int
+  orderId   Int            @map("order_id")
   order     Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
-  variantId Int
+  variantId Int            @map("variant_id")
   variant   ProductVariant @relation(fields: [variantId], references: [id])
   name      String
   sku       String
   price     Decimal        @db.Decimal(12, 2)
   quantity  Int
   total     Decimal        @db.Decimal(12, 2)
+
+  @@map("order_items")
 }
 
 model OrderStatusHistory {
   id        Int         @id @default(autoincrement())
-  orderId   Int
+  orderId   Int         @map("order_id")
   order     Order       @relation(fields: [orderId], references: [id], onDelete: Cascade)
   status    OrderStatus
   note      String?
-  createdBy Int
-  createdAt DateTime    @default(now())
+  createdBy Int         @map("created_by")
+  createdAt DateTime    @default(now()) @map("created_at")
+
+  @@map("order_status_histories")
 }
 
 // ==================== PAYMENT ====================
 
 model Payment {
   id          Int           @id @default(autoincrement())
-  userId      Int
+  userId      Int           @map("user_id")
   user        User          @relation(fields: [userId], references: [id])
   amount      Decimal       @db.Decimal(12, 2)
-  orderCode   BigInt        @unique
+  orderCode   BigInt        @unique @map("order_code")
   description String
-  checkoutUrl String?
-  qrCode      String?
+  checkoutUrl String?       @map("checkout_url")
+  qrCode      String?       @map("qr_code")
   status      PaymentStatus @default(PENDING)
-  expiredAt   DateTime
-  paidAt      DateTime?
-  gatewayData Json?
-  createdAt   DateTime      @default(now())
+  expiredAt   DateTime      @map("expired_at")
+  paidAt      DateTime?     @map("paid_at")
+  gatewayData Json?         @map("gateway_data")
+  createdAt   DateTime      @default(now()) @map("created_at")
   order       Order?
+
+  @@map("payments")
 }
 
 // ==================== NOTIFICATION ====================
 
 model Notification {
   id          Int              @id @default(autoincrement())
-  userId      Int
+  userId      Int              @map("user_id")
   user        User             @relation(fields: [userId], references: [id], onDelete: Cascade)
   type        NotificationType
   title       String
   body        String
-  referenceId Int?             // orderId
-  isRead      Boolean          @default(false)
-  emailSentAt DateTime?
-  createdAt   DateTime         @default(now())
-}
+  referenceId Int?             @map("reference_id")
+  isRead      Boolean          @default(false) @map("is_read")
+  emailSentAt DateTime?        @map("email_sent_at")
+  createdAt   DateTime         @default(now()) @map("created_at")
 
-enum NotificationType {
-  ORDER_CREATED
-  ORDER_SHIPPING
+  @@map("notifications")
 }
 
 // ==================== WISHLIST & CART ====================
 
 model Wishlist {
   id        Int      @id @default(autoincrement())
-  userId    Int
+  userId    Int      @map("user_id")
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  productId Int
+  productId Int      @map("product_id")
   product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
+  createdAt DateTime @default(now()) @map("created_at")
 
   @@unique([userId, productId])
+  @@map("wishlists")
 }
 
 model Cart {
   id        Int        @id @default(autoincrement())
-  userId    Int        @unique
+  userId    Int        @unique @map("user_id")
   user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
   items     CartItem[]
-  updatedAt DateTime   @updatedAt
+  updatedAt DateTime   @updatedAt @map("updated_at")
+
+  @@map("carts")
 }
 
 model CartItem {
   id        Int            @id @default(autoincrement())
-  cartId    Int
+  cartId    Int            @map("cart_id")
   cart      Cart           @relation(fields: [cartId], references: [id], onDelete: Cascade)
-  variantId Int
+  variantId Int            @map("variant_id")
   variant   ProductVariant @relation(fields: [variantId], references: [id])
   quantity  Int            @default(1)
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
+  createdAt DateTime       @default(now()) @map("created_at")
+  updatedAt DateTime       @updatedAt @map("updated_at")
 
   @@unique([cartId, variantId])
-}
-
-// ==================== CHAT ====================
-
-enum ConversationStatus {
-  OPEN
-  CLOSED
-}
-
-model Conversation {
-  id        Int                @id @default(autoincrement())
-  userId    Int
-  user      User               @relation(fields: [userId], references: [id], onDelete: Cascade)
-  status    ConversationStatus @default(OPEN)
-  messages  Message[]
-  createdAt DateTime           @default(now())
-  updatedAt DateTime           @updatedAt
-}
-
-model Message {
-  id             Int          @id @default(autoincrement())
-  conversationId Int
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  senderId       Int
-  sender         User         @relation(fields: [senderId], references: [id])
-  content        String
-  isRead         Boolean      @default(false)
-  createdAt      DateTime     @default(now())
+  @@map("cart_items")
 }

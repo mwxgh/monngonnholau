@@ -1,3 +1,4 @@
+import { staticUrl } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 
@@ -7,7 +8,7 @@ export function HowItWorks() {
       <div className="container mx-auto max-w-7xl px-4">
         <div className="absolute right-0 bottom-[-18%] hidden lg:block">
           <Image
-            src="/images/cook/burger.png"
+            src={staticUrl("images/burger.png")}
             alt="burger"
             width={463}
             height={622}
@@ -16,10 +17,11 @@ export function HowItWorks() {
         <div className="grid grid-cols-1 lg:grid-cols-12 my-16 space-x-5">
           <div className="col-span-6 flex justify-start">
             <Image
-              src="/images/cook/cook.png"
+              src={staticUrl("images/cook.png")}
               alt="cook"
               width={636}
               height={808}
+              style={{ width: "100%", height: "auto" }}
             />
           </div>
           <div className="col-span-6 flex flex-col justify-center">
@@ -38,10 +40,7 @@ export function HowItWorks() {
               Chúng tôi tin rằng đồ ăn ngon nhất là đồ được làm bằng tâm — như
               mẹ vẫn làm cho cả gia đình mỗi ngày....
             </p>
-            <Link
-              href="#gallery-section"
-              className="text-xl font-medium rounded-full text-white py-5 px-6 bg-primary lg:px-10 mr-6 w-fit border border-primary hover:bg-transparent hover:text-primary"
-            >
+            <Link href="#gallery-section" className="btn-primary mr-6">
               Tìm hiểu thêm
             </Link>
           </div>

@@ -1,20 +1,34 @@
+import { staticUrl } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 
 const galleryImages = [
-  { src: "/images/Gallery/foodone.jpg", name: "Caesar Salad (187 Kcal)", price: "35.000đ" },
-  { src: "/images/Gallery/foodtwo.jpg", name: "Salad Giáng Sinh (118 Kcal)", price: "17.000đ" },
-  { src: "/images/Gallery/foodthree.jpg", name: "Nấm xào bí đao ớt ngọt (238 kcal)", price: "45.000đ" },
-  { src: "/images/Gallery/foodfour.jpg", name: "BBQ Chicken Pizza (272 kcal)", price: "27.000đ" },
+  {
+    src: staticUrl("images/foodone.jpg"),
+    name: "Caesar Salad (187 Kcal)",
+    price: "35.000đ",
+  },
+  {
+    src: staticUrl("images/foodtwo.jpg"),
+    name: "Salad Giáng Sinh (118 Kcal)",
+    price: "17.000đ",
+  },
+  {
+    src: staticUrl("images/foodthree.jpg"),
+    name: "Nấm xào bí đao ớt ngọt (238 kcal)",
+    price: "45.000đ",
+  },
+  {
+    src: staticUrl("images/foodfour.jpg"),
+    name: "BBQ Chicken Pizza (272 kcal)",
+    price: "27.000đ",
+  },
 ];
 
 export function Stats() {
   return (
     <section>
-      <div
-        className="container mx-auto max-w-7xl px-4"
-        id="gallery-section"
-      >
+      <div className="container mx-auto max-w-7xl px-4" id="gallery-section">
         <div className="text-center">
           <p className="text-primary text-lg font-normal mb-3 tracking-widest uppercase">
             Thư viện ảnh
@@ -35,7 +49,7 @@ export function Stats() {
                   alt={item.name}
                   width={600}
                   height={500}
-                  className="object-cover w-full h-full"
+                  style={{ width: "100%", height: "auto", display: "block" }}
                 />
                 <div className="w-full h-full absolute bg-black/40 top-full group-hover:top-0 duration-500 p-12 flex flex-col items-start gap-8 justify-end">
                   <p className="text-white text-2xl">
@@ -45,10 +59,7 @@ export function Stats() {
                     <p className="text-white text-2xl">
                       <span className="font-semibold">Giá:</span> {item.price}
                     </p>
-                    <Link
-                      href="#"
-                      className="text-white rounded-full bg-primary border border-primary py-2 px-6 hover:bg-primary/40 hover:backdrop-blur-sm"
-                    >
+                    <Link href="#" className="btn-primary">
                       Tìm hiểu thêm
                     </Link>
                   </div>

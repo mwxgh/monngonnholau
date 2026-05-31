@@ -46,8 +46,12 @@ export function ValueProps() {
               <div className="w-12 h-12 rounded-xl bg-orange-50 group-hover:bg-orange-500 flex items-center justify-center mb-5 transition-colors duration-300">
                 <Icon className="w-5 h-5 text-orange-500 group-hover:text-white transition-colors duration-300" />
               </div>
-              <h3 className="text-base font-bold text-gray-900 mb-2">{title}</h3>
-              <p className="text-gray-500 text-sm leading-relaxed">{description}</p>
+              <h3 className="text-base font-bold text-gray-900 mb-2">
+                {title}
+              </h3>
+              <p className="text-gray-500 text-sm leading-relaxed">
+                {description}
+              </p>
             </div>
           ))}
         </div>

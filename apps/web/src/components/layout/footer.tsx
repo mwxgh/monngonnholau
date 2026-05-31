@@ -1,3 +1,4 @@
+import { staticUrl } from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image";
 
@@ -8,7 +9,13 @@ const navLinks = [
   { href: "#gallery-section", label: "Thư viện" },
 ];
 
-const companyLinks = ["Giới thiệu", "Tuyển dụng", "Di động", "Blog", "Cách chúng tôi làm việc"];
+const companyLinks = [
+  "Giới thiệu",
+  "Tuyển dụng",
+  "Di động",
+  "Blog",
+  "Cách chúng tôi làm việc",
+];
 const infoLinks = ["FAQ", "Báo chí", "Đối tác", "Nhà hàng", "Cộng tác viên"];
 
 const socials = [
@@ -40,13 +47,13 @@ export function Footer() {
               className="flex items-center text-white text-2xl font-semibold gap-4"
             >
               <Image
-                src="/images/logo/Logo.svg"
+                src={staticUrl("images/logo.png")}
                 alt="logo"
                 width={56}
                 height={56}
                 style={{ width: "auto", height: "auto" }}
               />
-              Mon Ngon Nho Lau
+              Món Ngon Nhớ Lâu
             </Link>
             <p className="text-xs font-medium text-white/50 mt-5 mb-16 max-w-xs">
               Thực phẩm thủ công, mẹ tự tay làm từng mẻ nhỏ. Không chất bảo
@@ -127,7 +134,7 @@ export function Footer() {
 
         <div className="border-t border-white/15 py-10 flex justify-between items-center">
           <p className="text-sm text-white/70">
-            © 2025 Mon Ngon Nho Lau. Đồ nhà làm — mẹ tự tay chế biến.
+            © 2025 Món Ngon Nhớ Lâu. Đồ nhà làm — mẹ tự tay chế biến.
           </p>
           <div>
             <Link
