@@ -2,6 +2,8 @@ import { staticUrl } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 
+import { Button } from "@/components/ui/button";
+
 export function HowItWorks() {
   return (
     <section className="relative" id="cook-section">
@@ -40,9 +42,9 @@ export function HowItWorks() {
               Chúng tôi tin rằng đồ ăn ngon nhất là đồ được làm bằng tâm — như
               mẹ vẫn làm cho cả gia đình mỗi ngày....
             </p>
-            <Link href="#gallery-section" className="btn-primary mr-6">
+            <Button size="pill" className="mr-6 self-start" render={<Link href="#gallery-section" />}>
               Tìm hiểu thêm
-            </Link>
+            </Button>
           </div>
         </div>
       </div>

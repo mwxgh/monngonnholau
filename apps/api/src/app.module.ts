@@ -5,6 +5,7 @@ import { AuthModule } from './auth/auth.module.js';
 import { JwtAuthGuard } from './auth/guards/jwt-auth.guard.js';
 import { RolesGuard } from './auth/guards/roles.guard.js';
 import { CartModule } from './cart/cart.module.js';
+import { DashboardModule } from './dashboard/dashboard.module.js';
 import { CategoriesModule } from './categories/categories.module.js';
 import { InventoryModule } from './inventory/inventory.module.js';
 import { MailModule } from './mail/mail.module.js';
@@ -35,6 +36,7 @@ import { WishlistModule } from './wishlist/wishlist.module.js';
     NotificationsModule,
     UploadModule,
     MailModule,
+    DashboardModule,
   ],
   providers: [
     { provide: APP_GUARD, useClass: JwtAuthGuard },

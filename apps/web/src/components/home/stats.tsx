@@ -2,6 +2,8 @@ import { staticUrl } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 
+import { Button } from "@/components/ui/button";
+
 const galleryImages = [
   {
     src: staticUrl("images/foodone.jpg"),
@@ -59,9 +61,9 @@ export function Stats() {
                     <p className="text-white text-2xl">
                       <span className="font-semibold">Giá:</span> {item.price}
                     </p>
-                    <Link href="#" className="btn-primary">
+                    <Button size="pill" render={<Link href="#" />}>
                       Tìm hiểu thêm
-                    </Link>
+                    </Button>
                   </div>
                 </div>
               </div>

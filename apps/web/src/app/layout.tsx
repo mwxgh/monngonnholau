@@ -2,9 +2,6 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import Script from "next/script";
 import "./globals.css";
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
-import { FloatingButtons } from "@/components/layout/floating-buttons";
 
 const poppins = Poppins({
   weight: ["400", "500", "600", "700"],
@@ -26,10 +23,7 @@ export default function RootLayout({
   return (
     <html lang="vi" className={`${poppins.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
-        <Header />
-        <main className="flex-1">{children}</main>
-        <Footer />
-        <FloatingButtons />
+        {children}
         {process.env.NEXT_PUBLIC_TAWK_PROPERTY_ID && (
           <Script
             id="tawk-to"

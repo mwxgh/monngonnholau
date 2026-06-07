@@ -4,19 +4,40 @@ import { staticUrl } from "@/lib/utils";
 import Link from "next/link";
 import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
-import { Phone } from "lucide-react";
+import { Menu, Phone, User, LogOut, X, ShieldCheck } from "lucide-react";
+import { LoginModal } from "@/components/auth/login-modal";
+import { OrderModal } from "@/components/order/order-modal";
+import { Button } from "@/components/ui/button";
 
 const navLinks = [
   { href: "#home-section", label: "Trang chủ" },
   { href: "#about-section", label: "Về chúng tôi" },
-  { href: "#cook-section", label: "Công thức" },
-  { href: "#gallery-section", label: "Thư viện" },
+  { href: "#product-section", label: "Sản phẩm" },
+  { href: "#faq-section", label: "FAQ" },
 ];
 
 export function Header() {
   const [navbarOpen, setNavbarOpen] = useState(false);
   const [sticky, setSticky] = useState(false);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
+  const [loginOpen, setLoginOpen] = useState(false);
+  const [orderOpen, setOrderOpen] = useState(false);
   const mobileMenuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const token = localStorage.getItem("access_token");
+    if (!token) return;
+    try {
+      const payload = JSON.parse(atob(token.split(".")[1]));
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsLoggedIn(true);
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setIsAdmin(payload.role === "ADMIN");
+    } catch {
+      localStorage.removeItem("access_token");
+    }
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setSticky(window.scrollY >= 20);
@@ -87,27 +108,73 @@ export function Header() {
               <Phone className="text-primary w-6 h-6 inline-block mr-1" />
               0869 863 088
             </Link>
-            <Link href="#cook-section" className="hidden lg:inline-flex btn-outline">
-              Xem thực đơn
-            </Link>
-            <Link
-              href="#gallery-section"
-              className="hidden lg:inline-flex btn-primary"
-            >
+            <Button size="pill" onClick={() => setOrderOpen(true)}>
               Đặt hàng
-            </Link>
+            </Button>
+            {isLoggedIn ? (
+              <div className="relative group">
+                <Button variant="outline" size="icon" className="rounded-full">
+                  <User className="w-5 h-5" />
+                </Button>
+                <div className="absolute right-0 top-full pt-2 hidden group-hover:block">
+                  <div className="w-48 bg-white rounded shadow-lg border border-gray-100 overflow-hidden">
+                    {isAdmin && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full justify-start gap-2 px-4 py-3 h-auto rounded-none text-primary hover:text-primary"
+                        render={<Link href="/admin" />}
+                      >
+                        <ShieldCheck className="w-4 h-4" />
+                        Quản trị hệ thống
+                      </Button>
+                    )}
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-start gap-2 px-4 py-3 h-auto rounded-none"
+                      render={<Link href="/account" />}
+                    >
+                      <User className="w-4 h-4 text-gray-500" />
+                      Tài khoản của tôi
+                    </Button>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="w-full justify-start gap-2 px-4 py-3 h-auto rounded-none text-destructive hover:text-destructive"
+                      onClick={() => {
+                        localStorage.removeItem("access_token");
+                        setIsLoggedIn(false);
+                        setIsAdmin(false);
+                      }}
+                    >
+                      <LogOut className="w-4 h-4" />
+                      Đăng xuất
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                size="pill"
+                onClick={() => setLoginOpen(true)}
+              >
+                Đăng nhập
+              </Button>
+            )}
           </div>
 
           {/* Mobile hamburger */}
-          <button
+          <Button
+            variant="ghost"
+            size="icon"
             onClick={() => setNavbarOpen(!navbarOpen)}
-            className="block lg:hidden p-2 rounded-lg"
+            className="block lg:hidden"
             aria-label="Toggle mobile menu"
           >
-            <span className="block w-6 h-0.5 bg-gray-800"></span>
-            <span className="block w-6 h-0.5 bg-gray-800 mt-1.5"></span>
-            <span className="block w-6 h-0.5 bg-gray-800 mt-1.5"></span>
-          </button>
+            <Menu className="w-6 h-6" />
+          </Button>
         </div>
 
         {/* Mobile overlay */}
@@ -130,20 +197,15 @@ export function Header() {
                 style={{ width: "auto", height: "auto" }}
               />
             </Link>
-            <button
+            <Button
+              variant="ghost"
+              size="icon"
               onClick={() => setNavbarOpen(false)}
-              className="absolute top-0 right-0 mr-8 mt-8"
+              className="text-white hover:text-white hover:bg-white/10"
               aria-label="Close menu"
             >
-              <Image
-                src={staticUrl("images/closed.svg")}
-                alt="close"
-                width={20}
-                height={20}
-                className="invert"
-                style={{ width: "auto", height: "auto" }}
-              />
-            </button>
+              <X className="w-5 h-5" />
+            </Button>
           </div>
           <nav className="flex flex-col items-start p-4">
             {navLinks.map(({ href, label }) => (
@@ -157,24 +219,83 @@ export function Header() {
               </Link>
             ))}
             <div className="mt-4 flex flex-col gap-3 w-full">
-              <Link
-                href="#cook-section"
-                onClick={() => setNavbarOpen(false)}
-                className="bg-transparent border border-primary text-primary px-4 py-2 rounded-lg hover:bg-primary hover:text-white text-center"
-              >
-                Xem thực đơn
-              </Link>
-              <Link
-                href="#gallery-section"
-                onClick={() => setNavbarOpen(false)}
-                className="bg-primary text-white px-4 py-2 rounded-lg hover:bg-primary/80 text-center"
+              <Button
+                size="pill"
+                className="w-full"
+                onClick={() => { setNavbarOpen(false); setOrderOpen(true); }}
               >
                 Đặt hàng
-              </Link>
+              </Button>
+              {isLoggedIn ? (
+                <>
+                  {isAdmin && (
+                    <Button
+                      variant="outline"
+                      size="pill"
+                      className="w-full gap-2 border-primary text-primary"
+                      render={<Link href="/admin" onClick={() => setNavbarOpen(false)} />}
+                    >
+                      <ShieldCheck className="w-5 h-5" />
+                      Quản trị hệ thống
+                    </Button>
+                  )}
+                  <Button
+                    variant="outline"
+                    size="pill"
+                    className="w-full gap-2"
+                    render={<Link href="/account" onClick={() => setNavbarOpen(false)} />}
+                  >
+                    <User className="w-5 h-5" />
+                    Tài khoản của tôi
+                  </Button>
+                  <Button
+                    variant="destructive"
+                    size="pill"
+                    className="w-full gap-2"
+                    onClick={() => {
+                      localStorage.removeItem("access_token");
+                      setIsLoggedIn(false);
+                      setIsAdmin(false);
+                      setNavbarOpen(false);
+                    }}
+                  >
+                    <LogOut className="w-5 h-5" />
+                    Đăng xuất
+                  </Button>
+                </>
+              ) : (
+                <Button
+                  variant="outline"
+                  size="pill"
+                  className="w-full"
+                  onClick={() => { setNavbarOpen(false); setLoginOpen(true); }}
+                >
+                  Đăng nhập
+                </Button>
+              )}
             </div>
           </nav>
         </div>
       </div>
+
+      <OrderModal open={orderOpen} onClose={() => setOrderOpen(false)} />
+
+      <LoginModal
+        open={loginOpen}
+        onClose={() => setLoginOpen(false)}
+        onSuccess={() => {
+          setIsLoggedIn(true);
+          try {
+            const token = localStorage.getItem("access_token");
+            if (token) {
+              const payload = JSON.parse(atob(token.split(".")[1]));
+              setIsAdmin(payload.role === "ADMIN");
+            }
+          } catch {
+            // ignore
+          }
+        }}
+      />
     </header>
   );
 }

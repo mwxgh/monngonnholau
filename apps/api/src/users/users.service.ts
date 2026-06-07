@@ -1,6 +1,13 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  BadRequestException,
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 import { PrismaService } from '../prisma/prisma.service.js';
 import { UpdateUserDto } from './dto/update-user.dto.js';
+import { UpdateProfileDto } from './dto/update-profile.dto.js';
+import { UpsertAddressDto } from './dto/upsert-address.dto.js';
 
 @Injectable()
 export class UsersService {
@@ -26,6 +33,17 @@ export class UsersService {
     return this.prisma.user.findUnique({ where: { email } });
   }
 
+  findByPhone(phone: string) {
+    return this.prisma.user.findUnique({ where: { phone } });
+  }
+
+  findByEmailOrPhone(identifier: string) {
+    const isEmail = identifier.includes('@');
+    return isEmail
+      ? this.findByEmail(identifier)
+      : this.findByPhone(identifier);
+  }
+
   async update(id: number, dto: UpdateUserDto) {
     await this.findById(id);
     return this.prisma.user.update({
@@ -38,5 +56,97 @@ export class UsersService {
   async remove(id: number) {
     await this.findById(id);
     return this.prisma.user.delete({ where: { id } });
+  }
+
+  // ── Profile (self) ──────────────────────────────────────────
+
+  async getProfile(id: number) {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+      omit: { password: true },
+      include: {
+        addresses: {
+          orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
+        },
+      },
+    });
+    if (!user) throw new NotFoundException('User not found');
+    return user;
+  }
+
+  async updateProfile(id: number, dto: UpdateProfileDto) {
+    await this.findById(id);
+    return this.prisma.user.update({
+      where: { id },
+      data: dto,
+      omit: { password: true },
+    });
+  }
+
+  async changePassword(id: number, oldPassword: string, newPassword: string) {
+    const user = await this.prisma.user.findUnique({ where: { id } });
+    if (!user?.password)
+      throw new BadRequestException('Tài khoản không có mật khẩu');
+    const valid = await bcrypt.compare(oldPassword, user.password);
+    if (!valid) throw new BadRequestException('Mật khẩu cũ không đúng');
+    const hashed = await bcrypt.hash(newPassword, 10);
+    await this.prisma.user.update({ where: { id }, data: { password: hashed } });
+    return { message: 'Đổi mật khẩu thành công' };
+  }
+
+  // ── Addresses ───────────────────────────────────────────────
+
+  getAddresses(userId: number) {
+    return this.prisma.address.findMany({
+      where: { userId },
+      orderBy: [{ isDefault: 'desc' }, { createdAt: 'desc' }],
+    });
+  }
+
+  async addAddress(userId: number, dto: UpsertAddressDto) {
+    if (dto.isDefault) {
+      await this.prisma.address.updateMany({
+        where: { userId },
+        data: { isDefault: false },
+      });
+    }
+    return this.prisma.address.create({ data: { ...dto, userId } });
+  }
+
+  async updateAddress(userId: number, addressId: number, dto: UpsertAddressDto) {
+    const existing = await this.prisma.address.findFirst({
+      where: { id: addressId, userId },
+    });
+    if (!existing) throw new NotFoundException('Địa chỉ không tồn tại');
+    if (dto.isDefault) {
+      await this.prisma.address.updateMany({
+        where: { userId },
+        data: { isDefault: false },
+      });
+    }
+    return this.prisma.address.update({ where: { id: addressId }, data: dto });
+  }
+
+  async deleteAddress(userId: number, addressId: number) {
+    const existing = await this.prisma.address.findFirst({
+      where: { id: addressId, userId },
+    });
+    if (!existing) throw new NotFoundException('Địa chỉ không tồn tại');
+    return this.prisma.address.delete({ where: { id: addressId } });
+  }
+
+  async setDefaultAddress(userId: number, addressId: number) {
+    const existing = await this.prisma.address.findFirst({
+      where: { id: addressId, userId },
+    });
+    if (!existing) throw new NotFoundException('Địa chỉ không tồn tại');
+    await this.prisma.address.updateMany({
+      where: { userId },
+      data: { isDefault: false },
+    });
+    return this.prisma.address.update({
+      where: { id: addressId },
+      data: { isDefault: true },
+    });
   }
 }

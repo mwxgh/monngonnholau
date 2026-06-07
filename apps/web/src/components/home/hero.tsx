@@ -2,6 +2,8 @@ import { staticUrl } from "@/lib/utils";
 import Image from "next/image";
 import Link from "next/link";
 
+import { Button } from "@/components/ui/button";
+
 export function Hero() {
   return (
     <section
@@ -26,15 +28,17 @@ export function Hero() {
             mỉ như nấu cho chính gia đình bạn.
           </p>
           <div className="flex flex-wrap gap-4">
-            <Link href="#cook-section" className="btn-primary">
+            <Button size="pill" render={<Link href="#cook-section" />}>
               Khám phá ngay
-            </Link>
-            <Link
-              href="#about-section"
-              className="w-full md:w-auto btn-outline text-white! border-white! hover:bg-white! hover:text-black!"
+            </Button>
+            <Button
+              variant="outline"
+              size="pill"
+              render={<Link href="#about-section" />}
+              className="bg-transparent text-white border-white hover:bg-white hover:text-black"
             >
               Về chúng tôi
-            </Link>
+            </Button>
           </div>
         </div>
       </div>

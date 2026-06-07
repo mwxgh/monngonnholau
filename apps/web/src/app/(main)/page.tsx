@@ -4,6 +4,7 @@ import { HowItWorks } from "@/components/home/how-it-works";
 import { Testimonials } from "@/components/home/testimonials";
 import { Stats } from "@/components/home/stats";
 import { PromoBanner } from "@/components/home/promo-banner";
+import { Faqs } from "@/components/home/faqs";
 
 export default function Home() {
   return (
@@ -13,6 +14,7 @@ export default function Home() {
       <HowItWorks />
       <Testimonials />
       <Stats />
+      <Faqs />
       <PromoBanner />
     </>
   );

@@ -33,8 +33,13 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto) {
-    const existing = await this.usersService.findByEmail(dto.email);
-    if (existing) throw new ConflictException('Email đã được sử dụng');
+    const [existingEmail, existingPhone] = await Promise.all([
+      this.usersService.findByEmail(dto.email),
+      this.usersService.findByPhone(dto.phone),
+    ]);
+    if (existingEmail) throw new ConflictException('Email đã được sử dụng');
+    if (existingPhone)
+      throw new ConflictException('Số điện thoại đã được sử dụng');
 
     const hashed = await bcrypt.hash(dto.password, 10);
     const user = await this.prisma.user.create({
@@ -45,13 +50,13 @@ export class AuthService {
   }
 
   async login(dto: LoginDto, res: Response) {
-    const user = await this.usersService.findByEmail(dto.email);
+    const user = await this.usersService.findByEmailOrPhone(dto.identifier);
     if (!user?.password)
-      throw new UnauthorizedException('Email hoặc mật khẩu không đúng');
+      throw new UnauthorizedException('Thông tin đăng nhập không đúng');
 
     const valid = await bcrypt.compare(dto.password, user.password);
     if (!valid)
-      throw new UnauthorizedException('Email hoặc mật khẩu không đúng');
+      throw new UnauthorizedException('Thông tin đăng nhập không đúng');
 
     if (!user.isActive) throw new UnauthorizedException('Tài khoản đã bị khóa');
 

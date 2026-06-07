@@ -1,8 +1,11 @@
 "use client";
-import { staticUrl } from "@/lib/utils";
 
+import { staticUrl } from "@/lib/utils";
 import Image from "next/image";
 import { ArrowRight } from "lucide-react";
+
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 
 export function PromoBanner() {
   return (
@@ -17,23 +20,20 @@ export function PromoBanner() {
               <h2 className="text-3xl md:text-5xl font-semibold text-white mb-8">
                 Đăng ký nhận <br /> bản tin của chúng tôi.
               </h2>
-              <div>
-                <div className="relative text-white focus-within:text-white flex flex-row-reverse shadow-lg rounded-full">
-                  <input
-                    type="email"
-                    className="py-6 sm:py-8 text-sm w-full text-black rounded-full pl-4 pr-16 focus:outline-none focus:text-black"
-                    placeholder="@ nhập địa chỉ email của bạn"
-                    autoComplete="off"
-                  />
-                  <div className="absolute inset-y-0 right-0 flex items-center pr-2">
-                    <button
-                      type="submit"
-                      className="p-2 bg-gray-900 hover:scale-110 duration-300 rounded-full"
-                    >
-                      <ArrowRight className="w-8 h-8 text-white" />
-                    </button>
-                  </div>
-                </div>
+              <div className="relative flex items-center shadow-lg rounded-full bg-white pr-2">
+                <Input
+                  type="email"
+                  placeholder="@ nhập địa chỉ email của bạn"
+                  className="border-none bg-transparent rounded-full py-6 sm:py-8 text-sm pl-4 pr-4 focus-visible:ring-0 h-auto"
+                  autoComplete="off"
+                />
+                <Button
+                  type="submit"
+                  size="icon"
+                  className="rounded-full bg-gray-900 hover:bg-gray-700 hover:scale-110 duration-300 shrink-0"
+                >
+                  <ArrowRight className="w-5 h-5" />
+                </Button>
               </div>
             </div>
           </div>

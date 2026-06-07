@@ -49,6 +49,11 @@ enum PaymentStatus {
   REFUNDED
 }
 
+enum PaymentMethod {
+  ONLINE
+  COD
+}
+
 enum NotificationType {
   ORDER_CREATED
   ORDER_SHIPPING
@@ -61,7 +66,7 @@ model User {
   email         String         @unique
   password      String?
   name          String?
-  phone         String?
+  phone         String?        @unique
   avatar        String?
   role          Role           @default(CUSTOMER)
   isActive      Boolean        @default(true) @map("is_active")
@@ -93,18 +98,22 @@ model OAuthAccount {
 // ==================== ADDRESS ====================
 
 model Address {
-  id        Int      @id @default(autoincrement())
-  userId    Int      @map("user_id")
-  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  fullName  String   @map("full_name")
-  phone     String
-  province  String
-  district  String
-  ward      String
-  street    String
-  isDefault Boolean  @default(false) @map("is_default")
-  createdAt DateTime @default(now()) @map("created_at")
-  orders    Order[]
+  id          Int      @id @default(autoincrement())
+  userId      Int?     @map("user_id")
+  user        User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName    String   @map("full_name")
+  phone       String
+  email       String?
+  oldProvince String?  @map("old_province")
+  oldDistrict String?  @map("old_district")
+  oldWard     String?  @map("old_ward")
+  province    String?
+  ward        String?
+  street      String?
+  detail      String
+  isDefault   Boolean  @default(false) @map("is_default")
+  createdAt   DateTime @default(now()) @map("created_at")
+  orders      Order[]
 
   @@map("addresses")
 }
@@ -212,13 +221,14 @@ model ShippingRate {
 
 model Order {
   id              Int                  @id @default(autoincrement())
-  userId          Int                  @map("user_id")
-  user            User                 @relation(fields: [userId], references: [id])
+  userId          Int?                 @map("user_id")
+  user            User?                @relation(fields: [userId], references: [id])
   addressId       Int                  @map("address_id")
   address         Address              @relation(fields: [addressId], references: [id])
   paymentId       Int?                 @unique @map("payment_id")
   payment         Payment?             @relation(fields: [paymentId], references: [id])
   status          OrderStatus          @default(PENDING_PAYMENT)
+  paymentMethod   PaymentMethod        @default(ONLINE) @map("payment_method")
   note            String?
   trackingCode    String?              @unique @map("tracking_code")
   subtotal        Decimal              @db.Decimal(12, 2)
@@ -264,8 +274,8 @@ model OrderStatusHistory {
 
 model Payment {
   id          Int           @id @default(autoincrement())
-  userId      Int           @map("user_id")
-  user        User          @relation(fields: [userId], references: [id])
+  userId      Int?          @map("user_id")
+  user        User?         @relation(fields: [userId], references: [id])
   amount      Decimal       @db.Decimal(12, 2)
   orderCode   BigInt        @unique @map("order_code")
   description String
@@ -296,6 +306,16 @@ model Notification {
   createdAt   DateTime         @default(now()) @map("created_at")
 
   @@map("notifications")
+}
+
+// ==================== SETTINGS ====================
+
+model Setting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("settings")
 }
 
 // ==================== WISHLIST & CART ====================
