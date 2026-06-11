@@ -1,3 +1,4 @@
+import path from "path";
 import type { NextConfig } from "next";
 
 const storageUrl = new URL(
@@ -5,12 +6,11 @@ const storageUrl = new URL(
 );
 
 const nextConfig: NextConfig = {
+  output: "standalone",
+  // Needed for pnpm monorepo: traces files from the repo root
+  outputFileTracingRoot: path.join(__dirname, "../../"),
   images: {
     remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "images.unsplash.com",
-      },
       {
         protocol: storageUrl.protocol.replace(":", "") as "http" | "https",
         hostname: storageUrl.hostname,

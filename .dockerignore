@@ -1,0 +1,13 @@
+node_modules
+**/node_modules
+.git
+**/.git
+**/dist
+**/.next
+**/.turbo
+**/.react-email
+**/turbo-build.log
+**/.tsbuildinfo
+.env
+**/.env
+*.md
