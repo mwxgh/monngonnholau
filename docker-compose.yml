@@ -4,12 +4,17 @@ services:
     container_name: mnnl-api
     restart: unless-stopped
     env_file: apps/api/.env
+    networks:
+      - internal
+      - app_network
 
   mnnl-web:
     image: ghcr.io/${GITHUB_OWNER}/mnnl-web:latest
     container_name: mnnl-web
     restart: unless-stopped
     env_file: apps/web/.env
+    networks:
+      - internal
 
   mnnl-nginx:
     image: nginx:alpine
@@ -25,3 +30,10 @@ services:
     depends_on:
       - mnnl-api
       - mnnl-web
+    networks:
+      - internal
+
+networks:
+  internal:
+  app_network:
+    external: true
