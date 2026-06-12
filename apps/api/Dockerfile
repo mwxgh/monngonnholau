@@ -29,6 +29,9 @@ COPY apps/api/prisma.config.ts ./apps/api/prisma.config.ts
 ARG DATABASE_URL=postgres://x:x@localhost:5432/x
 ENV DATABASE_URL=$DATABASE_URL
 RUN pnpm --filter=api deploy --prod /deploy
+COPY apps/api/prisma/ /deploy/prisma/
+COPY apps/api/prisma.config.ts /deploy/prisma.config.ts
+RUN DATABASE_URL=postgres://x:x@localhost:5432/x /deploy/node_modules/.bin/prisma generate
 ENV DATABASE_URL=
 
 COPY --from=builder /app/apps/api/dist /deploy/dist
