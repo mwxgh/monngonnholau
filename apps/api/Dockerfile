@@ -13,6 +13,7 @@ COPY apps/api/package.json ./apps/api/package.json
 RUN pnpm install --frozen-lockfile
 # Copy source after deps are cached, then build
 COPY apps/api/ ./apps/api/
+RUN DATABASE_URL=postgres://x:x@localhost:5432/x pnpm --filter=api exec prisma generate
 RUN pnpm --filter=api build
 
 # ── Runner ─────────────────────────────────────────────────────────────────────
