@@ -4,8 +4,9 @@ services:
     container_name: mnnl-api
     restart: unless-stopped
     env_file: apps/api/.env
+    ports:
+      - "127.0.0.1:3001:3001"
     networks:
-      - internal
       - app_network
 
   mnnl-web:
@@ -13,8 +14,8 @@ services:
     container_name: mnnl-web
     restart: unless-stopped
     env_file: apps/web/.env
-    networks:
-      - internal
+    ports:
+      - "127.0.0.1:3000:3000"
 
 
 networks:
