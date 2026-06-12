@@ -16,6 +16,8 @@ COPY apps/web/ ./apps/web/
 ENV NEXT_TELEMETRY_DISABLED=1
 ARG NEXT_PUBLIC_API_URL=https://api.monngonnholau.online
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ARG NEXT_PUBLIC_STORAGE_URL=https://media.monngonnholau.online/mnnl
+ENV NEXT_PUBLIC_STORAGE_URL=$NEXT_PUBLIC_STORAGE_URL
 RUN pnpm --filter=web build
 
 # ── Runner (Next.js standalone — no dev deps, minimal size) ────────────────────
