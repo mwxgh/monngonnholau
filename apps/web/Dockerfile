@@ -14,6 +14,8 @@ RUN pnpm install --frozen-lockfile
 # Copy source after deps are cached, then build
 COPY apps/web/ ./apps/web/
 ENV NEXT_TELEMETRY_DISABLED=1
+ARG NEXT_PUBLIC_API_URL=https://api.monngonnholau.online
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
 RUN pnpm --filter=web build
 
 # ── Runner (Next.js standalone — no dev deps, minimal size) ────────────────────
