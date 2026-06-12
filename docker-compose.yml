@@ -16,22 +16,6 @@ services:
     networks:
       - internal
 
-  mnnl-nginx:
-    image: nginx:alpine
-    container_name: mnnl-nginx
-    restart: unless-stopped
-    ports:
-      - "80:80"
-      - "443:443"
-    volumes:
-      - ./nginx.conf:/etc/nginx/conf.d/default.conf:ro
-      - /etc/letsencrypt:/etc/letsencrypt:ro
-      - /var/www/certbot:/var/www/certbot:ro
-    depends_on:
-      - mnnl-api
-      - mnnl-web
-    networks:
-      - internal
 
 networks:
   internal:
