@@ -1,40 +1,40 @@
-"use client";
-import { staticUrl } from "@/lib/utils";
+'use client'
+import { staticUrl } from '@/lib/utils'
 
-import Image from "next/image";
+import Image from 'next/image'
 
 const expertData = [
   {
-    profession: "Bếp trưởng",
-    name: "Nguyễn Văn An",
-    imgSrc: staticUrl("images/boyone.svg"),
+    profession: 'Bếp trưởng',
+    name: 'Nguyễn Văn An',
+    imgSrc: staticUrl('images/boyone.svg')
   },
   {
-    profession: "Bếp phó",
-    name: "Trần Thị Lan",
-    imgSrc: staticUrl("images/girl.png"),
+    profession: 'Bếp phó',
+    name: 'Trần Thị Lan',
+    imgSrc: staticUrl('images/girl.png')
   },
   {
-    profession: "Bếp phó",
-    name: "Lê Minh Tuấn",
-    imgSrc: staticUrl("images/boytwo.svg"),
+    profession: 'Bếp phó',
+    name: 'Lê Minh Tuấn',
+    imgSrc: staticUrl('images/boytwo.svg')
   },
   {
-    profession: "Bếp phó",
-    name: "Phạm Thu Hà",
-    imgSrc: staticUrl("images/girl.png"),
+    profession: 'Bếp phó',
+    name: 'Phạm Thu Hà',
+    imgSrc: staticUrl('images/girl.png')
   },
   {
-    profession: "Bếp trưởng",
-    name: "Hoàng Đức Nam",
-    imgSrc: staticUrl("images/boyone.svg"),
+    profession: 'Bếp trưởng',
+    name: 'Hoàng Đức Nam',
+    imgSrc: staticUrl('images/boyone.svg')
   },
   {
-    profession: "Bếp phó",
-    name: "Vũ Quang Huy",
-    imgSrc: staticUrl("images/boytwo.svg"),
-  },
-];
+    profession: 'Bếp phó',
+    name: 'Vũ Quang Huy',
+    imgSrc: staticUrl('images/boytwo.svg')
+  }
+]
 
 export function Testimonials() {
   return (
@@ -60,15 +60,15 @@ export function Testimonials() {
                       width={362}
                       height={262}
                       className="inline-block m-auto"
-                      style={{ width: "auto", height: "auto" }}
+                      style={{ width: 'auto', height: 'auto' }}
                     />
                     <div className="absolute top-1/2 right-[2%]">
                       <Image
-                        src={staticUrl("images/Linkedin.svg")}
+                        src={staticUrl('images/Linkedin.svg')}
                         alt="linkedin"
                         width={220}
                         height={120}
-                        style={{ width: "auto", height: "auto" }}
+                        style={{ width: 'auto', height: 'auto' }}
                       />
                     </div>
                   </div>
@@ -85,5 +85,5 @@ export function Testimonials() {
         </div>
       </div>
     </section>
-  );
+  )
 }

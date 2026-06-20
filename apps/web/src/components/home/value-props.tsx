@@ -1,25 +1,25 @@
-import { FlameKindling, Leaf, Heart } from "lucide-react";
+import { FlameKindling, Leaf, Heart } from 'lucide-react'
 
 const props = [
   {
     icon: FlameKindling,
-    title: "Thủ công từng mẻ",
+    title: 'Thủ công từng mẻ',
     description:
-      "Mỗi lọ, mỗi gói đều được làm tỉ mỉ theo từng mẻ nhỏ — không dây chuyền công nghiệp, không đại trà.",
+      'Mỗi lọ, mỗi gói đều được làm tỉ mỉ theo từng mẻ nhỏ — không dây chuyền công nghiệp, không đại trà.'
   },
   {
     icon: Leaf,
-    title: "Không chất bảo quản",
+    title: 'Không chất bảo quản',
     description:
-      "Hoàn toàn tự nhiên, không phụ gia, không chất tạo màu. Bạn biết rõ mình đang ăn gì.",
+      'Hoàn toàn tự nhiên, không phụ gia, không chất tạo màu. Bạn biết rõ mình đang ăn gì.'
   },
   {
     icon: Heart,
-    title: "Làm bằng cái tâm",
+    title: 'Làm bằng cái tâm',
     description:
-      "Từng sản phẩm được chăm chút như nấu cho chính gia đình — không pha chế lấy số lượng.",
-  },
-];
+      'Từng sản phẩm được chăm chút như nấu cho chính gia đình — không pha chế lấy số lượng.'
+  }
+]
 
 export function ValueProps() {
   return (
@@ -31,7 +31,7 @@ export function ValueProps() {
           </p>
           <h2
             className="text-4xl sm:text-5xl font-black text-gray-900"
-            style={{ fontFamily: "var(--font-display)" }}
+            style={{ fontFamily: 'var(--font-display)' }}
           >
             Khác biệt ở từng chi tiết
           </h2>
@@ -57,5 +57,5 @@ export function ValueProps() {
         </div>
       </div>
     </section>
-  );
+  )
 }

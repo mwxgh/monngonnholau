@@ -1,37 +1,37 @@
-import Image from "next/image";
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
+import Image from 'next/image'
+import Link from 'next/link'
+import { ArrowRight } from 'lucide-react'
 
 const categories = [
   {
-    name: "Bơ & Hạt",
-    description: "Bơ lạc · Bơ hạt điều · Bơ mè đen",
+    name: 'Bơ & Hạt',
+    description: 'Bơ lạc · Bơ hạt điều · Bơ mè đen',
     count: 3,
     image:
-      "https://images.unsplash.com/photo-1589782182703-2aaa69037b5b?w=600&q=80&auto=format&fit=crop",
+      'https://images.unsplash.com/photo-1589782182703-2aaa69037b5b?w=600&q=80&auto=format&fit=crop'
   },
   {
-    name: "Khô & Sấy",
-    description: "Thịt lợn khô · Chuối sấy mộc",
+    name: 'Khô & Sấy',
+    description: 'Thịt lợn khô · Chuối sấy mộc',
     count: 2,
     image:
-      "https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=600&q=80&auto=format&fit=crop",
+      'https://images.unsplash.com/photo-1541781774459-bb2af2f05b55?w=600&q=80&auto=format&fit=crop'
   },
   {
-    name: "Nước chấm",
-    description: "Nước mắm tự làm",
+    name: 'Nước chấm',
+    description: 'Nước mắm tự làm',
     count: 1,
     image:
-      "https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?w=600&q=80&auto=format&fit=crop",
+      'https://images.unsplash.com/photo-1567306226416-28f0efdc88ce?w=600&q=80&auto=format&fit=crop'
   },
   {
-    name: "Món mặn",
-    description: "Thịt chưng mắm tép",
+    name: 'Món mặn',
+    description: 'Thịt chưng mắm tép',
     count: 1,
     image:
-      "https://images.unsplash.com/photo-1547592180-85f173990554?w=600&q=80&auto=format&fit=crop",
-  },
-];
+      'https://images.unsplash.com/photo-1547592180-85f173990554?w=600&q=80&auto=format&fit=crop'
+  }
+]
 
 export function Categories() {
   return (
@@ -44,7 +44,7 @@ export function Categories() {
             </p>
             <h2
               className="text-4xl sm:text-5xl font-black text-gray-900"
-              style={{ fontFamily: "var(--font-display)" }}
+              style={{ fontFamily: 'var(--font-display)' }}
             >
               Tìm theo loại
             </h2>
@@ -80,7 +80,7 @@ export function Categories() {
               <div className="absolute bottom-0 left-0 right-0 p-4">
                 <h3
                   className="text-white text-xl font-black leading-tight mb-1"
-                  style={{ fontFamily: "var(--font-display)" }}
+                  style={{ fontFamily: 'var(--font-display)' }}
                 >
                   {cat.name}
                 </h3>
@@ -93,5 +93,5 @@ export function Categories() {
         </div>
       </div>
     </section>
-  );
+  )
 }

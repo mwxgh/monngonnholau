@@ -1,16 +1,16 @@
-import 'dotenv/config';
-import { PrismaClient, ProductStatus, Role } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import * as bcrypt from 'bcrypt';
+import 'dotenv/config'
+import { PrismaClient, ProductStatus, Role } from '@prisma/client'
+import { PrismaPg } from '@prisma/adapter-pg'
+import * as bcrypt from 'bcrypt'
 
-const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL });
-const prisma = new PrismaClient({ adapter });
+const adapter = new PrismaPg({ connectionString: process.env.DATABASE_URL })
+const prisma = new PrismaClient({ adapter })
 
 async function main() {
   // ── Admins ──────────────────────────────────────────────────────────────
 
-  const password = 'password123';
-  const hashed = await bcrypt.hash(password, 10);
+  const password = 'password123'
+  const hashed = await bcrypt.hash(password, 10)
 
   const admin = await prisma.user.upsert({
     where: { email: 'novamei173@gmail.com' },
@@ -21,10 +21,10 @@ async function main() {
       password: hashed,
       name: 'Nova Mei',
       role: Role.ADMIN,
-      isActive: true,
-    },
-  });
-  console.log(`Superadmin seeded: ${admin.email} (id=${admin.id})`);
+      isActive: true
+    }
+  })
+  console.log(`Superadmin seeded: ${admin.email} (id=${admin.id})`)
 
   const admin2 = await prisma.user.upsert({
     where: { email: 'nguyenhanh251099@gmail.com' },
@@ -35,25 +35,25 @@ async function main() {
       password: hashed,
       name: 'Nguyen Hanh',
       role: Role.ADMIN,
-      isActive: true,
-    },
-  });
-  console.log(`Superadmin seeded: ${admin2.email} (id=${admin2.id})`);
+      isActive: true
+    }
+  })
+  console.log(`Superadmin seeded: ${admin2.email} (id=${admin2.id})`)
 
   // ── Categories ──────────────────────────────────────────────────────────
   const catBo = await prisma.category.upsert({
     where: { slug: 'bo-hat' },
     update: {},
-    create: { name: 'Bơ hạt', slug: 'bo-hat' },
-  });
+    create: { name: 'Bơ hạt', slug: 'bo-hat' }
+  })
 
   const catKho = await prisma.category.upsert({
     where: { slug: 'do-kho' },
     update: {},
-    create: { name: 'Đồ khô', slug: 'do-kho' },
-  });
+    create: { name: 'Đồ khô', slug: 'do-kho' }
+  })
 
-  console.log(`Categories seeded: ${catBo.name}, ${catKho.name}`);
+  console.log(`Categories seeded: ${catBo.name}, ${catKho.name}`)
 
   // ── Products ────────────────────────────────────────────────────────────
   const products = [
@@ -72,7 +72,7 @@ async function main() {
           attributes: { weight: '200g', type: 'Origin (muối + mật ong)' },
           price: 84600,
           comparePrice: 90000,
-          qty: 854,
+          qty: 854
         },
         {
           sku: 'SR',
@@ -81,9 +81,9 @@ async function main() {
           attributes: { weight: '200g', type: 'Raw (nguyên mè)' },
           price: 84600,
           comparePrice: 90000,
-          qty: 925,
-        },
-      ],
+          qty: 925
+        }
+      ]
     },
     {
       name: 'Thịt Heo Khô Xé Sợi - Đậm Vị',
@@ -100,9 +100,9 @@ async function main() {
           attributes: { type: 'Đậm vị' },
           price: 155000,
           comparePrice: undefined as number | undefined,
-          qty: 106,
-        },
-      ],
+          qty: 106
+        }
+      ]
     },
     {
       name: 'Bơ Hạt Điều 200g - Loại Mịn',
@@ -119,9 +119,9 @@ async function main() {
           attributes: { weight: '200g', type: 'Loại mịn' },
           price: 85500,
           comparePrice: 90000,
-          qty: 80,
-        },
-      ],
+          qty: 80
+        }
+      ]
     },
     {
       name: 'Bơ Macca 200g - Loại Mịn',
@@ -138,9 +138,9 @@ async function main() {
           attributes: { weight: '200g', type: 'Loại mịn' },
           price: 153000,
           comparePrice: 170000,
-          qty: 0,
-        },
-      ],
+          qty: 0
+        }
+      ]
     },
     {
       name: 'Bơ Đậu Phộng 200g - Loại Mịn',
@@ -157,7 +157,7 @@ async function main() {
           attributes: { weight: '200g', type: 'Origin (muối + mật ong)' },
           price: 70500,
           comparePrice: 75000,
-          qty: 35,
+          qty: 35
         },
         {
           sku: 'PR',
@@ -166,9 +166,9 @@ async function main() {
           attributes: { weight: '200g', type: 'Raw (nguyên lạc)' },
           price: 70500,
           comparePrice: 75000,
-          qty: 35,
-        },
-      ],
+          qty: 35
+        }
+      ]
     },
     {
       name: 'Chuối Sấy Mộc Gia Lai 500g',
@@ -185,11 +185,11 @@ async function main() {
           attributes: { weight: '500g' },
           price: 112800,
           comparePrice: 120000,
-          qty: 0,
-        },
-      ],
-    },
-  ];
+          qty: 0
+        }
+      ]
+    }
+  ]
 
   for (const p of products) {
     const product = await prisma.product.upsert({
@@ -198,7 +198,7 @@ async function main() {
         name: p.name,
         description: p.description,
         images: p.images,
-        status: ProductStatus.ACTIVE,
+        status: ProductStatus.ACTIVE
       },
       create: {
         name: p.name,
@@ -206,9 +206,9 @@ async function main() {
         description: p.description,
         images: p.images,
         categoryId: p.categoryId,
-        status: ProductStatus.ACTIVE,
-      },
-    });
+        status: ProductStatus.ACTIVE
+      }
+    })
 
     for (const v of p.variants) {
       const variant = await prisma.productVariant.upsert({
@@ -221,26 +221,26 @@ async function main() {
           attributes: v.attributes,
           price: v.price,
           comparePrice: v.comparePrice,
-          weight: v.weight,
-        },
-      });
+          weight: v.weight
+        }
+      })
 
       await prisma.inventory.upsert({
         where: { variantId: variant.id },
         update: {},
-        create: { variantId: variant.id, quantity: v.qty, lowStock: 5 },
-      });
+        create: { variantId: variant.id, quantity: v.qty, lowStock: 5 }
+      })
     }
 
     console.log(
-      `Product seeded: ${product.name} (${p.variants.length} variants)`,
-    );
+      `Product seeded: ${product.name} (${p.variants.length} variants)`
+    )
   }
 }
 
 main()
   .catch((e) => {
-    console.error(e);
-    process.exit(1);
+    console.error(e)
+    process.exit(1)
   })
-  .finally(() => prisma.$disconnect());
+  .finally(() => prisma.$disconnect())

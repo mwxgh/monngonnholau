@@ -1,40 +1,40 @@
-import { staticUrl } from "@/lib/utils";
-import Link from "next/link";
-import Image from "next/image";
+import { staticUrl } from '@/lib/utils'
+import Link from 'next/link'
+import Image from 'next/image'
 
 const navLinks = [
-  { href: "#home-section", label: "Trang chủ" },
-  { href: "#about-section", label: "Về chúng tôi" },
-  { href: "#cook-section", label: "Công thức" },
-  { href: "#gallery-section", label: "Thư viện" },
-];
+  { href: '#home-section', label: 'Trang chủ' },
+  { href: '#about-section', label: 'Về chúng tôi' },
+  { href: '#cook-section', label: 'Công thức' },
+  { href: '#gallery-section', label: 'Thư viện' }
+]
 
 const companyLinks = [
-  "Giới thiệu",
-  "Tuyển dụng",
-  "Di động",
-  "Blog",
-  "Cách chúng tôi làm việc",
-];
-const infoLinks = ["FAQ", "Báo chí", "Đối tác", "Nhà hàng", "Cộng tác viên"];
+  'Giới thiệu',
+  'Tuyển dụng',
+  'Di động',
+  'Blog',
+  'Cách chúng tôi làm việc'
+]
+const infoLinks = ['FAQ', 'Báo chí', 'Đối tác', 'Nhà hàng', 'Cộng tác viên']
 
 const socials = [
   {
-    href: "#",
-    label: "Facebook",
-    path: "M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z",
+    href: '#',
+    label: 'Facebook',
+    path: 'M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z'
   },
   {
-    href: "#",
-    label: "Instagram",
-    path: "M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37zM17.5 6.5h.01M7.5 2h9A5.5 5.5 0 0 1 22 7.5v9A5.5 5.5 0 0 1 16.5 22h-9A5.5 5.5 0 0 1 2 16.5v-9A5.5 5.5 0 0 1 7.5 2z",
+    href: '#',
+    label: 'Instagram',
+    path: 'M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37zM17.5 6.5h.01M7.5 2h9A5.5 5.5 0 0 1 22 7.5v9A5.5 5.5 0 0 1 16.5 22h-9A5.5 5.5 0 0 1 2 16.5v-9A5.5 5.5 0 0 1 7.5 2z'
   },
   {
-    href: "#",
-    label: "X / Twitter",
-    path: "M4 4l16 16M4 20 20 4",
-  },
-];
+    href: '#',
+    label: 'X / Twitter',
+    path: 'M4 4l16 16M4 20 20 4'
+  }
+]
 
 export function Footer() {
   return (
@@ -47,11 +47,11 @@ export function Footer() {
               className="flex items-center text-white text-2xl font-semibold gap-4"
             >
               <Image
-                src={staticUrl("images/logo.png")}
+                src={staticUrl('images/logo.png')}
                 alt="logo"
                 width={56}
                 height={56}
-                style={{ width: "auto", height: "auto" }}
+                style={{ width: 'auto', height: 'auto' }}
               />
               Món Ngon Nhớ Lâu
             </Link>
@@ -153,5 +153,5 @@ export function Footer() {
         </div>
       </div>
     </footer>
-  );
+  )
 }

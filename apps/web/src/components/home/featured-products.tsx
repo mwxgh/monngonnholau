@@ -1,30 +1,30 @@
-import { staticUrl } from "@/lib/utils";
-import Image from "next/image";
-import Link from "next/link";
-import { ChevronRight } from "lucide-react";
+import { staticUrl } from '@/lib/utils'
+import Image from 'next/image'
+import Link from 'next/link'
+import { ChevronRight } from 'lucide-react'
 
 const featuresData = [
   {
-    imgSrc: staticUrl("images/featureOne.svg"),
-    heading: "Đa dạng thực đơn",
-    subheading: "Bơ lạc, hạt điều, khô sấy, mắm tép — đầy đủ khẩu vị",
+    imgSrc: staticUrl('images/featureOne.svg'),
+    heading: 'Đa dạng thực đơn',
+    subheading: 'Bơ lạc, hạt điều, khô sấy, mắm tép — đầy đủ khẩu vị'
   },
   {
-    imgSrc: staticUrl("images/featureTwo.svg"),
-    heading: "Nguyên liệu sạch",
-    subheading: "100% tự nhiên, không chất bảo quản, không phụ gia",
+    imgSrc: staticUrl('images/featureTwo.svg'),
+    heading: 'Nguyên liệu sạch',
+    subheading: '100% tự nhiên, không chất bảo quản, không phụ gia'
   },
   {
-    imgSrc: staticUrl("images/featureThree.svg"),
-    heading: "Mẹ tự tay làm",
-    subheading: "Từng mẻ nhỏ được chăm chút như nấu cho gia đình",
+    imgSrc: staticUrl('images/featureThree.svg'),
+    heading: 'Mẹ tự tay làm',
+    subheading: 'Từng mẻ nhỏ được chăm chút như nấu cho gia đình'
   },
   {
-    imgSrc: staticUrl("images/featureFour.svg"),
-    heading: "Giao hàng nhanh",
-    subheading: "Đóng gói cẩn thận, giao tận tay toàn quốc 1–2 ngày",
-  },
-];
+    imgSrc: staticUrl('images/featureFour.svg'),
+    heading: 'Giao hàng nhanh',
+    subheading: 'Đóng gói cẩn thận, giao tận tay toàn quốc 1–2 ngày'
+  }
+]
 
 export function FeaturedProducts() {
   return (
@@ -50,7 +50,7 @@ export function FeaturedProducts() {
                   alt={item.heading}
                   width={200}
                   height={200}
-                  style={{ width: "auto", height: "auto" }}
+                  style={{ width: 'auto', height: 'auto' }}
                 />
               </div>
               <h3 className="text-2xl text-black font-semibold text-center mt-16">
@@ -73,5 +73,5 @@ export function FeaturedProducts() {
         </div>
       </div>
     </section>
-  );
+  )
 }

@@ -1,89 +1,99 @@
-import { createHmac } from 'crypto';
-import { BadRequestException, Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { PayOS } from '@payos/node';
-import { PrismaService } from '../prisma/prisma.service';
-import { MailService } from '../mail/mail.service';
-import { CreateQuickOrderDto } from './dto/create-quick-order.dto';
+import { createHmac } from 'crypto'
+import { BadRequestException, Injectable, Logger } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
+import { PayOS } from '@payos/node'
+import { OrderStatus, Prisma } from '@prisma/client'
+import { PrismaService } from '../prisma/prisma.service'
+import { MailService } from '../mail/mail.service'
+import { CreateQuickOrderDto } from './dto/create-quick-order.dto'
 
 @Injectable()
 export class OrdersService {
-  private readonly logger = new Logger(OrdersService.name);
-  private readonly payos: PayOS | null = null;
-  private readonly checksumKey: string | null = null;
-  private readonly clientUrl: string;
+  private readonly logger = new Logger(OrdersService.name)
+  private readonly payos: PayOS | null = null
+  private readonly checksumKey: string | null = null
+  private readonly clientUrl: string
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly mail: MailService,
-    private readonly config: ConfigService,
+    private readonly config: ConfigService
   ) {
-    const clientId = this.config.get<string>('PAYOS_CLIENT_ID');
-    const apiKey = this.config.get<string>('PAYOS_API_KEY');
-    const checksumKey = this.config.get<string>('PAYOS_CHECKSUM_KEY');
+    const clientId = this.config.get<string>('PAYOS_CLIENT_ID')
+    const apiKey = this.config.get<string>('PAYOS_API_KEY')
+    const checksumKey = this.config.get<string>('PAYOS_CHECKSUM_KEY')
 
     if (clientId && apiKey && checksumKey) {
-      this.payos = new PayOS({ clientId, apiKey, checksumKey });
-      this.checksumKey = checksumKey;
+      this.payos = new PayOS({ clientId, apiKey, checksumKey })
+      this.checksumKey = checksumKey
     }
 
-    this.clientUrl = this.config.get('CLIENT_URL', 'http://localhost:3000');
+    this.clientUrl = this.config.get('CLIENT_URL', 'http://localhost:3000')
   }
 
-  private verifyWebhookSignature(data: Record<string, unknown>, signature: string): boolean {
-    if (!this.checksumKey) return false;
+  private verifyWebhookSignature(
+    data: Record<string, unknown>,
+    signature: string
+  ): boolean {
+    if (!this.checksumKey) return false
     const sorted = Object.keys(data)
       .sort()
-      .map((k) => `${k}=${data[k]}`)
-      .join('&');
-    const expected = createHmac('sha256', this.checksumKey).update(sorted).digest('hex');
-    return expected === signature;
+      .map((k) => `${k}=${String(data[k])}`)
+      .join('&')
+    const expected = createHmac('sha256', this.checksumKey)
+      .update(sorted)
+      .digest('hex')
+    return expected === signature
   }
 
   async createQuickOrder(dto: CreateQuickOrderDto) {
-    const skus = dto.items.map((i) => i.sku);
+    const skus = dto.items.map((i) => i.sku)
     const variants = await this.prisma.productVariant.findMany({
       where: { sku: { in: skus } },
-      include: { inventory: true, product: { select: { name: true } } },
-    });
+      include: { inventory: true, product: { select: { name: true } } }
+    })
 
     if (variants.length !== skus.length) {
-      throw new BadRequestException('Một số sản phẩm không tồn tại');
+      throw new BadRequestException('Một số sản phẩm không tồn tại')
     }
 
     for (const item of dto.items) {
-      const v = variants.find((v) => v.sku === item.sku)!;
-      const qty = v.inventory?.quantity ?? 0;
+      const v = variants.find((v) => v.sku === item.sku)!
+      const qty = v.inventory?.quantity ?? 0
       if (qty < item.qty) {
         throw new BadRequestException(
-          `Sản phẩm "${v.product.name} — ${v.name}" không đủ số lượng trong kho`,
-        );
+          `Sản phẩm "${v.product.name} — ${v.name}" không đủ số lượng trong kho`
+        )
       }
     }
 
-    let subtotal = 0;
+    let subtotal = 0
     const orderItems = dto.items.map((item) => {
-      const v = variants.find((v) => v.sku === item.sku)!;
-      const price = Number(v.price);
-      const total = price * item.qty;
-      subtotal += total;
+      const v = variants.find((v) => v.sku === item.sku)!
+      const price = Number(v.price)
+      const total = price * item.qty
+      subtotal += total
       return {
         variantId: v.id,
         name: `${v.product.name} — ${v.name}`,
         sku: v.sku,
         price: v.price,
         quantity: item.qty,
-        total,
-      };
-    });
+        total
+      }
+    })
 
-    const shippingSetting = await this.prisma.setting.findUnique({ where: { key: 'shipping_fee' } });
-    const shippingFee = shippingSetting ? Number(shippingSetting.value) : 30000;
-    const total = subtotal + shippingFee;
-    const parts = [dto.street, dto.ward, dto.district, dto.province].filter(Boolean);
-    const detail = parts.join(', ');
+    const shippingSetting = await this.prisma.setting.findUnique({
+      where: { key: 'shipping_fee' }
+    })
+    const shippingFee = shippingSetting ? Number(shippingSetting.value) : 30000
+    const total = subtotal + shippingFee
+    const parts = [dto.street, dto.ward, dto.district, dto.province].filter(
+      Boolean
+    )
+    const detail = parts.join(', ')
 
-    const isV1 = !!dto.district;
+    const isV1 = !!dto.district
     const address = await this.prisma.address.create({
       data: {
         fullName: dto.name,
@@ -92,12 +102,16 @@ export class OrdersService {
         street: dto.street,
         detail,
         ...(isV1
-          ? { oldProvince: dto.province, oldDistrict: dto.district, oldWard: dto.ward }
-          : { province: dto.province, ward: dto.ward }),
-      },
-    });
+          ? {
+              oldProvince: dto.province,
+              oldDistrict: dto.district,
+              oldWard: dto.ward
+            }
+          : { province: dto.province, ward: dto.ward })
+      }
+    })
 
-    const isCod = dto.paymentMethod === 'cod';
+    const isCod = dto.paymentMethod === 'cod'
     const order = await this.prisma.order.create({
       data: {
         addressId: address.id,
@@ -108,9 +122,9 @@ export class OrdersService {
         shippingFee,
         discount: 0,
         total,
-        items: { create: orderItems },
-      },
-    });
+        items: { create: orderItems }
+      }
+    })
 
     // Confirmation email (fire-and-forget)
     if (dto.email) {
@@ -123,24 +137,24 @@ export class OrdersService {
             name: i.name,
             sku: i.sku,
             quantity: i.quantity,
-            price: Number(i.price),
+            price: Number(i.price)
           })),
           subtotal,
           shippingFee,
           total,
-          address: detail,
+          address: detail
         })
-        .catch(() => {});
+        .catch(() => {})
     }
 
     // Create PayOS payment link
     if (!this.payos || dto.paymentMethod === 'cod') {
-      return { orderId: order.id, total };
+      return { orderId: order.id, total }
     }
 
     try {
-      const orderCode = Date.now();
-      const desc = `DH#${order.id} MNNL`.slice(0, 25);
+      const orderCode = Date.now()
+      const desc = `DH#${order.id} MNNL`.slice(0, 25)
 
       const paymentLink = await this.payos.paymentRequests.create({
         orderCode,
@@ -149,14 +163,14 @@ export class OrdersService {
         items: orderItems.map((i) => ({
           name: i.name.slice(0, 50),
           quantity: i.quantity,
-          price: Number(i.price),
+          price: Number(i.price)
         })),
         buyerName: dto.name,
         buyerPhone: dto.phone,
         buyerEmail: dto.email,
         returnUrl: `${this.clientUrl}/?order=${order.id}&paid=1`,
-        cancelUrl: `${this.clientUrl}/?order=${order.id}&paid=0`,
-      });
+        cancelUrl: `${this.clientUrl}/?order=${order.id}&paid=0`
+      })
 
       const payment = await this.prisma.payment.create({
         data: {
@@ -166,25 +180,25 @@ export class OrdersService {
           checkoutUrl: paymentLink.checkoutUrl,
           qrCode: paymentLink.qrCode,
           status: 'PENDING',
-          expiredAt: new Date(Date.now() + 15 * 60 * 1000),
-        },
-      });
+          expiredAt: new Date(Date.now() + 15 * 60 * 1000)
+        }
+      })
 
       await this.prisma.order.update({
         where: { id: order.id },
-        data: { paymentId: payment.id },
-      });
+        data: { paymentId: payment.id }
+      })
 
       return {
         orderId: order.id,
         total,
         qrCode: paymentLink.qrCode,
         checkoutUrl: paymentLink.checkoutUrl,
-        orderCode,
-      };
+        orderCode
+      }
     } catch (err) {
-      this.logger.error(`PayOS failed: ${(err as Error).message}`);
-      return { orderId: order.id, total };
+      this.logger.error(`PayOS failed: ${(err as Error).message}`)
+      return { orderId: order.id, total }
     }
   }
 
@@ -193,41 +207,44 @@ export class OrdersService {
       where: { id: orderId },
       select: {
         status: true,
-        payment: { select: { id: true, status: true, orderCode: true } },
-      },
-    });
-    if (!order) throw new BadRequestException('Đơn hàng không tồn tại');
+        payment: { select: { id: true, status: true, orderCode: true } }
+      }
+    })
+    if (!order) throw new BadRequestException('Đơn hàng không tồn tại')
 
-    const payment = order.payment;
+    const payment = order.payment
 
     // Already paid or no PayOS payment — return DB state directly
     if (!payment || payment.status === 'PAID' || !this.payos) {
-      return { orderStatus: order.status, paymentStatus: payment?.status ?? null };
+      return {
+        orderStatus: order.status,
+        paymentStatus: payment?.status ?? null
+      }
     }
 
     // Actively check with PayOS
     try {
-      const info = await (this.payos as any).paymentRequests.get(
-        payment.orderCode.toString(),
-      );
+      const info = await this.payos.paymentRequests.get(
+        Number(payment.orderCode)
+      )
       if (info?.status === 'PAID') {
         await this.prisma.$transaction([
           this.prisma.payment.update({
             where: { id: payment.id },
-            data: { status: 'PAID', paidAt: new Date() },
+            data: { status: 'PAID', paidAt: new Date() }
           }),
           this.prisma.order.update({
             where: { id: orderId },
-            data: { status: 'PAID' },
-          }),
-        ]);
-        return { orderStatus: 'PAID', paymentStatus: 'PAID' };
+            data: { status: 'PAID' }
+          })
+        ])
+        return { orderStatus: 'PAID', paymentStatus: 'PAID' }
       }
     } catch (err) {
-      this.logger.warn(`PayOS status check failed: ${(err as Error).message}`);
+      this.logger.warn(`PayOS status check failed: ${(err as Error).message}`)
     }
 
-    return { orderStatus: order.status, paymentStatus: payment.status };
+    return { orderStatus: order.status, paymentStatus: payment.status }
   }
 
   async findAllAdmin() {
@@ -235,10 +252,13 @@ export class OrdersService {
       orderBy: { createdAt: 'desc' },
       include: {
         address: { select: { fullName: true, phone: true } },
-        items: { select: { name: true, quantity: true }, orderBy: { id: 'asc' } },
-        payment: { select: { status: true } },
-      },
-    });
+        items: {
+          select: { name: true, quantity: true },
+          orderBy: { id: 'asc' }
+        },
+        payment: { select: { status: true } }
+      }
+    })
 
     return orders.map((o) => ({
       id: o.id,
@@ -249,45 +269,49 @@ export class OrdersService {
       status: o.status,
       paymentMethod: o.paymentMethod,
       paymentStatus: o.payment?.status ?? null,
-      createdAt: o.createdAt,
-    }));
+      createdAt: o.createdAt
+    }))
   }
 
   async updateOrderStatus(orderId: number, status: string) {
     return this.prisma.order.update({
       where: { id: orderId },
-      data: { status: status as any },
-      select: { id: true, status: true },
-    });
+      data: { status: status as OrderStatus },
+      select: { id: true, status: true }
+    })
   }
 
   async handlePaymentWebhook(body: Record<string, unknown>) {
-    if (!this.checksumKey) return { success: true };
+    if (!this.checksumKey) return { success: true }
 
-    const { signature, data } = body as { signature?: string; data?: Record<string, unknown> };
-    if (!signature || !data) return { success: false, message: 'Invalid payload' };
+    const { signature, data } = body as {
+      signature?: string
+      data?: Record<string, unknown>
+    }
+    if (!signature || !data)
+      return { success: false, message: 'Invalid payload' }
 
     if (!this.verifyWebhookSignature(data, signature)) {
-      this.logger.warn('Webhook signature invalid');
-      return { success: false, message: 'Invalid signature' };
+      this.logger.warn('Webhook signature invalid')
+      return { success: false, message: 'Invalid signature' }
     }
 
     // Only process successful payments
-    if (data['code'] !== '00' && body['code'] !== '00') return { success: true };
+    if (data['code'] !== '00' && body['code'] !== '00') return { success: true }
 
-    const orderCode = BigInt(data['orderCode'] as number);
+    const orderCode = BigInt(data['orderCode'] as number)
     const payment = await this.prisma.payment.findUnique({
       where: { orderCode },
-      include: { order: { select: { id: true } } },
-    });
+      include: { order: { select: { id: true } } }
+    })
 
     if (!payment) {
-      this.logger.warn(`Webhook: payment not found for orderCode ${orderCode}`);
-      return { success: true };
+      this.logger.warn(`Webhook: payment not found for orderCode ${orderCode}`)
+      return { success: true }
     }
 
     // Already processed
-    if (payment.status === 'PAID') return { success: true };
+    if (payment.status === 'PAID') return { success: true }
 
     await this.prisma.$transaction([
       this.prisma.payment.update({
@@ -295,20 +319,22 @@ export class OrdersService {
         data: {
           status: 'PAID',
           paidAt: new Date(),
-          gatewayData: body as any,
-        },
+          gatewayData: body as Prisma.InputJsonValue
+        }
       }),
       ...(payment.order
         ? [
             this.prisma.order.update({
               where: { id: payment.order.id },
-              data: { status: 'PAID' },
-            }),
+              data: { status: 'PAID' }
+            })
           ]
-        : []),
-    ]);
+        : [])
+    ])
 
-    this.logger.log(`Payment confirmed: orderCode=${orderCode}, orderId=${payment.order?.id}`);
-    return { success: true };
+    this.logger.log(
+      `Payment confirmed: orderCode=${orderCode}, orderId=${payment.order?.id}`
+    )
+    return { success: true }
   }
 }

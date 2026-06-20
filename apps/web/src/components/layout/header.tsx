@@ -1,49 +1,48 @@
-"use client";
+'use client'
 
-import { staticUrl } from "@/lib/utils";
-import Link from "next/link";
-import Image from "next/image";
-import { useEffect, useRef, useState } from "react";
-import { Menu, Phone, User, LogOut, X, ShieldCheck } from "lucide-react";
-import { LoginModal } from "@/components/auth/login-modal";
-import { OrderModal } from "@/components/order/order-modal";
-import { Button } from "@/components/ui/button";
+import { staticUrl } from '@/lib/utils'
+import Link from 'next/link'
+import Image from 'next/image'
+import { useEffect, useRef, useState } from 'react'
+import { Menu, Phone, User, LogOut, X, ShieldCheck } from 'lucide-react'
+import { LoginModal } from '@/components/auth/login-modal'
+import { OrderModal } from '@/components/order/order-modal'
+import { Button } from '@/components/ui/button'
 
 const navLinks = [
-  { href: "#home-section", label: "Trang chủ" },
-  { href: "#about-section", label: "Về chúng tôi" },
-  { href: "#product-section", label: "Sản phẩm" },
-  { href: "#faq-section", label: "FAQ" },
-];
+  { href: '#home-section', label: 'Trang chủ' },
+  { href: '#about-section', label: 'Về chúng tôi' },
+  { href: '#product-section', label: 'Sản phẩm' },
+  { href: '#faq-section', label: 'FAQ' }
+]
 
 export function Header() {
-  const [navbarOpen, setNavbarOpen] = useState(false);
-  const [sticky, setSticky] = useState(false);
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [isAdmin, setIsAdmin] = useState(false);
-  const [loginOpen, setLoginOpen] = useState(false);
-  const [orderOpen, setOrderOpen] = useState(false);
-  const mobileMenuRef = useRef<HTMLDivElement>(null);
+  const [navbarOpen, setNavbarOpen] = useState(false)
+  const [sticky, setSticky] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isAdmin, setIsAdmin] = useState(false)
+  const [loginOpen, setLoginOpen] = useState(false)
+  const [orderOpen, setOrderOpen] = useState(false)
+  const mobileMenuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
-    const token = localStorage.getItem("access_token");
-    if (!token) return;
+    const token = localStorage.getItem('access_token')
+    if (!token) return
     try {
-      const payload = JSON.parse(atob(token.split(".")[1]));
+      const payload = JSON.parse(atob(token.split('.')[1]))
       // eslint-disable-next-line react-hooks/set-state-in-effect
-      setIsLoggedIn(true);
-      // eslint-disable-next-line react-hooks/set-state-in-effect
-      setIsAdmin(payload.role === "ADMIN");
+      setIsLoggedIn(true)
+      setIsAdmin(payload.role === 'ADMIN')
     } catch {
-      localStorage.removeItem("access_token");
+      localStorage.removeItem('access_token')
     }
-  }, []);
+  }, [])
 
   useEffect(() => {
-    const onScroll = () => setSticky(window.scrollY >= 20);
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+    const onScroll = () => setSticky(window.scrollY >= 20)
+    window.addEventListener('scroll', onScroll)
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   useEffect(() => {
     const handleClickOutside = (e: MouseEvent) => {
@@ -52,24 +51,24 @@ export function Header() {
         !mobileMenuRef.current.contains(e.target as Node) &&
         navbarOpen
       ) {
-        setNavbarOpen(false);
+        setNavbarOpen(false)
       }
-    };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => document.removeEventListener("mousedown", handleClickOutside);
-  }, [navbarOpen]);
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [navbarOpen])
 
   useEffect(() => {
-    document.body.style.overflow = navbarOpen ? "hidden" : "";
+    document.body.style.overflow = navbarOpen ? 'hidden' : ''
     return () => {
-      document.body.style.overflow = "";
-    };
-  }, [navbarOpen]);
+      document.body.style.overflow = ''
+    }
+  }, [navbarOpen])
 
   return (
     <header
       className={`fixed top-0 z-40 w-full bg-white py-1 transition-all duration-300 ${
-        sticky ? "shadow-lg" : "shadow-sm"
+        sticky ? 'shadow-lg' : 'shadow-sm'
       }`}
     >
       <div className="lg:py-0 py-2">
@@ -77,12 +76,12 @@ export function Header() {
           {/* Logo */}
           <Link href="/" className="flex items-center">
             <Image
-              src={staticUrl("images/logo.png")}
+              src={staticUrl('images/logo.png')}
               alt="Món Ngon Nhớ Lâu"
               width={200}
               height={64}
               priority
-              style={{ height: "4rem", width: "auto" }}
+              style={{ height: '4rem', width: 'auto' }}
             />
           </Link>
 
@@ -143,9 +142,9 @@ export function Header() {
                       size="sm"
                       className="w-full justify-start gap-2 px-4 py-3 h-auto rounded-none text-destructive hover:text-destructive"
                       onClick={() => {
-                        localStorage.removeItem("access_token");
-                        setIsLoggedIn(false);
-                        setIsAdmin(false);
+                        localStorage.removeItem('access_token')
+                        setIsLoggedIn(false)
+                        setIsAdmin(false)
                       }}
                     >
                       <LogOut className="w-4 h-4" />
@@ -184,17 +183,17 @@ export function Header() {
         <div
           ref={mobileMenuRef}
           className={`lg:hidden fixed top-0 right-0 h-full w-full bg-darkmode shadow-lg transform transition-transform duration-300 max-w-xs z-50 ${
-            navbarOpen ? "translate-x-0" : "translate-x-full"
+            navbarOpen ? 'translate-x-0' : 'translate-x-full'
           }`}
         >
           <div className="flex items-center justify-between p-4">
             <Link href="/" className="flex items-center">
               <Image
-                src={staticUrl("images/logo.png")}
+                src={staticUrl('images/logo.png')}
                 alt="Món Ngon Nhớ Lâu"
                 width={40}
                 height={40}
-                style={{ width: "auto", height: "auto" }}
+                style={{ width: 'auto', height: 'auto' }}
               />
             </Link>
             <Button
@@ -222,7 +221,10 @@ export function Header() {
               <Button
                 size="pill"
                 className="w-full"
-                onClick={() => { setNavbarOpen(false); setOrderOpen(true); }}
+                onClick={() => {
+                  setNavbarOpen(false)
+                  setOrderOpen(true)
+                }}
               >
                 Đặt hàng
               </Button>
@@ -233,7 +235,12 @@ export function Header() {
                       variant="outline"
                       size="pill"
                       className="w-full gap-2 border-primary text-primary"
-                      render={<Link href="/admin" onClick={() => setNavbarOpen(false)} />}
+                      render={
+                        <Link
+                          href="/admin"
+                          onClick={() => setNavbarOpen(false)}
+                        />
+                      }
                     >
                       <ShieldCheck className="w-5 h-5" />
                       Quản trị hệ thống
@@ -243,7 +250,12 @@ export function Header() {
                     variant="outline"
                     size="pill"
                     className="w-full gap-2"
-                    render={<Link href="/account" onClick={() => setNavbarOpen(false)} />}
+                    render={
+                      <Link
+                        href="/account"
+                        onClick={() => setNavbarOpen(false)}
+                      />
+                    }
                   >
                     <User className="w-5 h-5" />
                     Tài khoản của tôi
@@ -253,10 +265,10 @@ export function Header() {
                     size="pill"
                     className="w-full gap-2"
                     onClick={() => {
-                      localStorage.removeItem("access_token");
-                      setIsLoggedIn(false);
-                      setIsAdmin(false);
-                      setNavbarOpen(false);
+                      localStorage.removeItem('access_token')
+                      setIsLoggedIn(false)
+                      setIsAdmin(false)
+                      setNavbarOpen(false)
                     }}
                   >
                     <LogOut className="w-5 h-5" />
@@ -268,7 +280,10 @@ export function Header() {
                   variant="outline"
                   size="pill"
                   className="w-full"
-                  onClick={() => { setNavbarOpen(false); setLoginOpen(true); }}
+                  onClick={() => {
+                    setNavbarOpen(false)
+                    setLoginOpen(true)
+                  }}
                 >
                   Đăng nhập
                 </Button>
@@ -284,12 +299,12 @@ export function Header() {
         open={loginOpen}
         onClose={() => setLoginOpen(false)}
         onSuccess={() => {
-          setIsLoggedIn(true);
+          setIsLoggedIn(true)
           try {
-            const token = localStorage.getItem("access_token");
+            const token = localStorage.getItem('access_token')
             if (token) {
-              const payload = JSON.parse(atob(token.split(".")[1]));
-              setIsAdmin(payload.role === "ADMIN");
+              const payload = JSON.parse(atob(token.split('.')[1]))
+              setIsAdmin(payload.role === 'ADMIN')
             }
           } catch {
             // ignore
@@ -297,5 +312,5 @@ export function Header() {
         }}
       />
     </header>
-  );
+  )
 }

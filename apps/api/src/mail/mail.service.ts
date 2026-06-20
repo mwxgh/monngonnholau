@@ -1,57 +1,57 @@
-import { Injectable, Logger } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { Resend } from 'resend';
+import { Injectable, Logger } from '@nestjs/common'
+import { ConfigService } from '@nestjs/config'
+import { Resend } from 'resend'
 
 @Injectable()
 export class MailService {
-  private readonly resend: Resend;
-  private readonly from: string;
-  private readonly logger = new Logger(MailService.name);
+  private readonly resend: Resend
+  private readonly from: string
+  private readonly logger = new Logger(MailService.name)
 
   constructor(private readonly config: ConfigService) {
-    this.resend = new Resend(this.config.getOrThrow('RESEND_API_KEY'));
+    this.resend = new Resend(this.config.getOrThrow('RESEND_API_KEY'))
     this.from = this.config.get(
       'MAIL_FROM',
-      'Món Ngon Nhớ Lâu <xinchao@monngonnholau.online>',
-    );
+      'Món Ngon Nhớ Lâu <xinchao@monngonnholau.online>'
+    )
   }
 
   async sendOrderCreated(params: {
-    to: string;
-    customerName: string;
-    orderId: number;
-    items: { name: string; sku: string; quantity: number; price: number }[];
-    subtotal: number;
-    shippingFee: number;
-    total: number;
-    address: string;
+    to: string
+    customerName: string
+    orderId: number
+    items: { name: string; sku: string; quantity: number; price: number }[]
+    subtotal: number
+    shippingFee: number
+    total: number
+    address: string
   }) {
     const { error } = await this.resend.emails.send({
       from: this.from,
       to: params.to,
       subject: `Đặt hàng thành công #${params.orderId}`,
-      html: buildOrderCreatedHtml(params),
-    });
+      html: buildOrderCreatedHtml(params)
+    })
 
-    if (error) this.logger.error(`sendOrderCreated failed: ${error.message}`);
+    if (error) this.logger.error(`sendOrderCreated failed: ${error.message}`)
   }
 
   async sendOrderShipping(params: {
-    to: string;
-    customerName: string;
-    orderId: number;
-    trackingCode: string;
-    carrier: string;
-    address: string;
+    to: string
+    customerName: string
+    orderId: number
+    trackingCode: string
+    carrier: string
+    address: string
   }) {
     const { error } = await this.resend.emails.send({
       from: this.from,
       to: params.to,
       subject: `Đơn hàng #${params.orderId} đang được giao`,
-      html: buildOrderShippingHtml(params),
-    });
+      html: buildOrderShippingHtml(params)
+    })
 
-    if (error) this.logger.error(`sendOrderShipping failed: ${error.message}`);
+    if (error) this.logger.error(`sendOrderShipping failed: ${error.message}`)
   }
 }
 
@@ -65,23 +65,23 @@ const styles = `
   .total { font-size:16px; font-weight:bold; color:#111; }
   hr { border:none; border-top:1px solid #eee; margin:16px 0; }
   .footer { font-size:12px; color:#aaa; text-align:center; }
-`;
+`
 
 function vnd(amount: number) {
   return new Intl.NumberFormat('vi-VN', {
     style: 'currency',
-    currency: 'VND',
-  }).format(amount);
+    currency: 'VND'
+  }).format(amount)
 }
 
 function buildOrderCreatedHtml(p: {
-  customerName: string;
-  orderId: number;
-  items: { name: string; sku: string; quantity: number; price: number }[];
-  subtotal: number;
-  shippingFee: number;
-  total: number;
-  address: string;
+  customerName: string
+  orderId: number
+  items: { name: string; sku: string; quantity: number; price: number }[]
+  subtotal: number
+  shippingFee: number
+  total: number
+  address: string
 }) {
   const itemRows = p.items
     .map(
@@ -89,9 +89,9 @@ function buildOrderCreatedHtml(p: {
       <div class="row">
         <div><p style="margin:0">${i.name}</p><p style="font-size:12px;color:#888;margin:0">SKU: ${i.sku} × ${i.quantity}</p></div>
         <p style="margin:0">${vnd(i.price * i.quantity)}</p>
-      </div>`,
+      </div>`
     )
-    .join('');
+    .join('')
 
   return `<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><style>${styles}</style></head>
   <body><div class="container">
@@ -108,15 +108,15 @@ function buildOrderCreatedHtml(p: {
     <p>${p.address}</p>
     <hr>
     <p class="footer">Món Ngon Nhớ Lâu — monngonnholau.online</p>
-  </div></body></html>`;
+  </div></body></html>`
 }
 
 function buildOrderShippingHtml(p: {
-  customerName: string;
-  orderId: number;
-  trackingCode: string;
-  carrier: string;
-  address: string;
+  customerName: string
+  orderId: number
+  trackingCode: string
+  carrier: string
+  address: string
 }) {
   return `<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><style>${styles}</style></head>
   <body><div class="container">
@@ -129,5 +129,5 @@ function buildOrderShippingHtml(p: {
     <p>Địa chỉ nhận hàng: ${p.address}</p>
     <hr>
     <p class="footer">Món Ngon Nhớ Lâu — monngonnholau.online</p>
-  </div></body></html>`;
+  </div></body></html>`
 }

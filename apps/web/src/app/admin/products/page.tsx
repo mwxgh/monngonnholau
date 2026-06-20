@@ -1,116 +1,120 @@
-"use client";
+'use client'
 
-import { Fragment, useEffect, useState } from "react";
-import { fetchAdmin } from "@/lib/fetch-admin";
-import { ChevronDown, ChevronRight, Pencil } from "lucide-react";
+import { Fragment, useEffect, useState } from 'react'
+import { fetchAdmin } from '@/lib/fetch-admin'
+import { ChevronDown, ChevronRight, Pencil } from 'lucide-react'
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
-  CardDescription,
-} from "@/components/ui/card";
+  CardDescription
+} from '@/components/ui/card'
 import {
   Dialog,
   DialogContent,
   DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
+  DialogTitle
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Button } from '@/components/ui/button'
+import { cn } from '@/lib/utils'
 
 interface Variant {
-  id: number;
-  sku: string;
-  name: string;
-  price: string;
-  comparePrice: string | null;
-  inventory: { quantity: number } | null;
+  id: number
+  sku: string
+  name: string
+  price: string
+  comparePrice: string | null
+  inventory: { quantity: number } | null
 }
 
 interface Category {
-  id: number;
-  name: string;
+  id: number
+  name: string
 }
 
 interface AdminProduct {
-  id: number;
-  name: string;
-  slug: string;
-  description: string | null;
-  status: string;
-  categoryId: number | null;
-  category: { name: string } | null;
-  variants: Variant[];
-  createdAt: string;
+  id: number
+  name: string
+  slug: string
+  description: string | null
+  status: string
+  categoryId: number | null
+  category: { name: string } | null
+  variants: Variant[]
+  createdAt: string
 }
 
 function formatVND(n: number) {
-  return "₫" + n.toLocaleString("vi-VN");
+  return '₫' + n.toLocaleString('vi-VN')
 }
 
 const STATUS_META: Record<string, { label: string; className: string }> = {
   ACTIVE: {
-    label: "Đang bán",
-    className: "text-emerald-700 bg-emerald-50 border border-emerald-200",
+    label: 'Đang bán',
+    className: 'text-emerald-700 bg-emerald-50 border border-emerald-200'
   },
   INACTIVE: {
-    label: "Tạm dừng",
-    className: "text-gray-600 bg-gray-50 border border-gray-200",
+    label: 'Tạm dừng',
+    className: 'text-gray-600 bg-gray-50 border border-gray-200'
   },
   DRAFT: {
-    label: "Nháp",
-    className: "text-amber-700 bg-amber-50 border border-amber-200",
-  },
-};
+    label: 'Nháp',
+    className: 'text-amber-700 bg-amber-50 border border-amber-200'
+  }
+}
 
-const API = process.env.NEXT_PUBLIC_API_URL;
+const API = process.env.NEXT_PUBLIC_API_URL
 
 export default function AdminProductsPage() {
-  const [products, setProducts] = useState<AdminProduct[]>([]);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [expanded, setExpanded] = useState<Set<number>>(new Set());
-  const [filter, setFilter] = useState("");
+  const [products, setProducts] = useState<AdminProduct[]>([])
+  const [categories, setCategories] = useState<Category[]>([])
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [expanded, setExpanded] = useState<Set<number>>(new Set())
+  const [filter, setFilter] = useState('')
   const [editingProduct, setEditingProduct] = useState<AdminProduct | null>(
-    null,
-  );
+    null
+  )
   const [editingVariant, setEditingVariant] = useState<{
-    productId: number;
-    variant: Variant;
-  } | null>(null);
+    productId: number
+    variant: Variant
+  } | null>(null)
 
   useEffect(() => {
     fetchAdmin(`${API}/api/products/admin`)
       .then(async (r) => {
-        const data = await r.json();
-        if (!r.ok) throw new Error(data?.message ?? `Lỗi ${r.status}`);
-        setProducts(Array.isArray(data) ? data : []);
+        const data = await r.json()
+        if (!r.ok) throw new Error(data?.message ?? `Lỗi ${r.status}`)
+        setProducts(Array.isArray(data) ? data : [])
       })
       .catch((e) => setError(e.message))
-      .finally(() => setLoading(false));
+      .finally(() => setLoading(false))
 
     fetch(`${API}/api/categories`)
       .then((r) => r.json())
       .then((data) => setCategories(Array.isArray(data) ? data : []))
-      .catch(() => {});
-  }, []);
+      .catch(() => {})
+  }, [])
 
   function toggleExpand(id: number) {
     setExpanded((prev) => {
-      const next = new Set(prev);
-      next.has(id) ? next.delete(id) : next.add(id);
-      return next;
-    });
+      const next = new Set(prev)
+      if (next.has(id)) {
+        next.delete(id)
+      } else {
+        next.add(id)
+      }
+      return next
+    })
   }
 
   function applyProductUpdate(updated: AdminProduct) {
     setProducts((prev) =>
-      prev.map((p) => (p.id === updated.id ? { ...p, ...updated } : p)),
-    );
+      prev.map((p) => (p.id === updated.id ? { ...p, ...updated } : p))
+    )
   }
 
   function applyVariantUpdate(productId: number, updated: Variant) {
@@ -121,29 +125,29 @@ export default function AdminProductsPage() {
           : {
               ...p,
               variants: p.variants.map((v) =>
-                v.id === updated.id ? updated : v,
-              ),
-            },
-      ),
-    );
+                v.id === updated.id ? updated : v
+              )
+            }
+      )
+    )
   }
 
   const filtered = filter
     ? products.filter((p) => p.status === filter)
-    : products;
+    : products
 
   const totalStock = (product: AdminProduct) =>
-    product.variants.reduce((s, v) => s + (v.inventory?.quantity ?? 0), 0);
+    product.variants.reduce((s, v) => s + (v.inventory?.quantity ?? 0), 0)
 
   const priceRange = (product: AdminProduct) => {
-    const prices = product.variants.map((v) => Number(v.price));
-    if (prices.length === 0) return "—";
-    const min = Math.min(...prices);
-    const max = Math.max(...prices);
+    const prices = product.variants.map((v) => Number(v.price))
+    if (prices.length === 0) return '—'
+    const min = Math.min(...prices)
+    const max = Math.max(...prices)
     return min === max
       ? formatVND(min)
-      : `${formatVND(min)} – ${formatVND(max)}`;
-  };
+      : `${formatVND(min)} – ${formatVND(max)}`
+  }
 
   return (
     <div className="space-y-6 max-w-7xl">
@@ -161,20 +165,20 @@ export default function AdminProductsPage() {
             <CardDescription>{products.length} sản phẩm</CardDescription>
           </div>
           <div className="flex gap-1.5">
-            {["", "ACTIVE", "INACTIVE", "DRAFT"].map((value) => (
+            {['', 'ACTIVE', 'INACTIVE', 'DRAFT'].map((value) => (
               <button
                 key={value}
                 onClick={() => setFilter(value)}
                 className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
                   filter === value
-                    ? "bg-primary text-white border-primary"
-                    : "bg-background border-border text-muted-foreground hover:border-primary/50"
+                    ? 'bg-primary text-white border-primary'
+                    : 'bg-background border-border text-muted-foreground hover:border-primary/50'
                 }`}
               >
-                {value === "" ? "Tất cả" : STATUS_META[value]?.label}
+                {value === '' ? 'Tất cả' : STATUS_META[value]?.label}
                 <span className="ml-1 font-normal">
                   (
-                  {value === ""
+                  {value === ''
                     ? products.length
                     : products.filter((p) => p.status === value).length}
                   )
@@ -213,12 +217,12 @@ export default function AdminProductsPage() {
                 </thead>
                 <tbody>
                   {filtered.map((product) => {
-                    const isExpanded = expanded.has(product.id);
-                    const stock = totalStock(product);
+                    const isExpanded = expanded.has(product.id)
+                    const stock = totalStock(product)
                     const s = STATUS_META[product.status] ?? {
                       label: product.status,
-                      className: "",
-                    };
+                      className: ''
+                    }
                     return (
                       <Fragment key={product.id}>
                         <tr
@@ -239,7 +243,7 @@ export default function AdminProductsPage() {
                             </p>
                           </td>
                           <td className="py-3 text-sm text-muted-foreground">
-                            {product.category?.name ?? "—"}
+                            {product.category?.name ?? '—'}
                           </td>
                           <td className="py-3 text-center text-sm">
                             {product.variants.length}
@@ -250,12 +254,12 @@ export default function AdminProductsPage() {
                           <td className="py-3 text-center">
                             <span
                               className={cn(
-                                "text-xs font-semibold",
+                                'text-xs font-semibold',
                                 stock === 0
-                                  ? "text-red-600"
+                                  ? 'text-red-600'
                                   : stock <= 10
-                                    ? "text-amber-600"
-                                    : "text-emerald-600",
+                                    ? 'text-amber-600'
+                                    : 'text-emerald-600'
                               )}
                             >
                               {stock}
@@ -273,8 +277,8 @@ export default function AdminProductsPage() {
                               variant="ghost"
                               size="icon-sm"
                               onClick={(e) => {
-                                e.stopPropagation();
-                                setEditingProduct(product);
+                                e.stopPropagation()
+                                setEditingProduct(product)
                               }}
                             >
                               <Pencil className="w-3.5 h-3.5" />
@@ -310,12 +314,12 @@ export default function AdminProductsPage() {
                               <td className="py-2 text-center">
                                 <span
                                   className={cn(
-                                    "text-xs font-semibold",
+                                    'text-xs font-semibold',
                                     (v.inventory?.quantity ?? 0) === 0
-                                      ? "text-red-600"
+                                      ? 'text-red-600'
                                       : (v.inventory?.quantity ?? 0) <= 5
-                                        ? "text-amber-600"
-                                        : "text-emerald-600",
+                                        ? 'text-amber-600'
+                                        : 'text-emerald-600'
                                   )}
                                 >
                                   {v.inventory?.quantity ?? 0}
@@ -327,11 +331,11 @@ export default function AdminProductsPage() {
                                   variant="ghost"
                                   size="icon-sm"
                                   onClick={(e) => {
-                                    e.stopPropagation();
+                                    e.stopPropagation()
                                     setEditingVariant({
                                       productId: product.id,
-                                      variant: v,
-                                    });
+                                      variant: v
+                                    })
                                   }}
                                 >
                                   <Pencil className="w-3.5 h-3.5" />
@@ -340,7 +344,7 @@ export default function AdminProductsPage() {
                             </tr>
                           ))}
                       </Fragment>
-                    );
+                    )
                   })}
                   {filtered.length === 0 && (
                     <tr>
@@ -364,8 +368,8 @@ export default function AdminProductsPage() {
         categories={categories}
         onClose={() => setEditingProduct(null)}
         onSaved={(updated) => {
-          applyProductUpdate(updated);
-          setEditingProduct(null);
+          applyProductUpdate(updated)
+          setEditingProduct(null)
         }}
       />
 
@@ -374,62 +378,63 @@ export default function AdminProductsPage() {
         onClose={() => setEditingVariant(null)}
         onSaved={(updated) => {
           if (editingVariant)
-            applyVariantUpdate(editingVariant.productId, updated);
-          setEditingVariant(null);
+            applyVariantUpdate(editingVariant.productId, updated)
+          setEditingVariant(null)
         }}
       />
     </div>
-  );
+  )
 }
 
 function ProductEditDialog({
   product,
   categories,
   onClose,
-  onSaved,
+  onSaved
 }: {
-  product: AdminProduct | null;
-  categories: Category[];
-  onClose: () => void;
-  onSaved: (updated: AdminProduct) => void;
+  product: AdminProduct | null
+  categories: Category[]
+  onClose: () => void
+  onSaved: (updated: AdminProduct) => void
 }) {
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [categoryId, setCategoryId] = useState("");
-  const [status, setStatus] = useState("ACTIVE");
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [categoryId, setCategoryId] = useState('')
+  const [status, setStatus] = useState('ACTIVE')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    if (!product) return;
-    setName(product.name);
-    setDescription(product.description ?? "");
-    setCategoryId(product.categoryId ? String(product.categoryId) : "");
-    setStatus(product.status);
-    setError("");
-  }, [product]);
+    if (!product) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setName(product.name)
+    setDescription(product.description ?? '')
+    setCategoryId(product.categoryId ? String(product.categoryId) : '')
+    setStatus(product.status)
+    setError('')
+  }, [product])
 
   async function handleSave() {
-    if (!product) return;
-    setSaving(true);
-    setError("");
+    if (!product) return
+    setSaving(true)
+    setError('')
     try {
       const res = await fetchAdmin(`${API}/api/products/admin/${product.id}`, {
-        method: "PATCH",
+        method: 'PATCH',
         body: JSON.stringify({
           name,
           description,
           categoryId: categoryId ? Number(categoryId) : undefined,
-          status,
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.message ?? `Lỗi ${res.status}`);
-      onSaved(data as AdminProduct);
+          status
+        })
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data?.message ?? `Lỗi ${res.status}`)
+      onSaved(data as AdminProduct)
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Có lỗi xảy ra");
+      setError(e instanceof Error ? e.message : 'Có lỗi xảy ra')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
   }
 
@@ -496,64 +501,65 @@ function ProductEditDialog({
               Hủy
             </Button>
             <Button onClick={handleSave} disabled={saving}>
-              {saving ? "Đang lưu..." : "Lưu"}
+              {saving ? 'Đang lưu...' : 'Lưu'}
             </Button>
           </div>
         </div>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
 
 function VariantEditDialog({
   entry,
   onClose,
-  onSaved,
+  onSaved
 }: {
-  entry: { productId: number; variant: Variant } | null;
-  onClose: () => void;
-  onSaved: (updated: Variant) => void;
+  entry: { productId: number; variant: Variant } | null
+  onClose: () => void
+  onSaved: (updated: Variant) => void
 }) {
-  const [name, setName] = useState("");
-  const [price, setPrice] = useState("");
-  const [comparePrice, setComparePrice] = useState("");
-  const [quantity, setQuantity] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState("");
+  const [name, setName] = useState('')
+  const [price, setPrice] = useState('')
+  const [comparePrice, setComparePrice] = useState('')
+  const [quantity, setQuantity] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [error, setError] = useState('')
 
   useEffect(() => {
-    if (!entry) return;
-    setName(entry.variant.name);
-    setPrice(entry.variant.price);
-    setComparePrice(entry.variant.comparePrice ?? "");
-    setQuantity(String(entry.variant.inventory?.quantity ?? 0));
-    setError("");
-  }, [entry]);
+    if (!entry) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setName(entry.variant.name)
+    setPrice(entry.variant.price)
+    setComparePrice(entry.variant.comparePrice ?? '')
+    setQuantity(String(entry.variant.inventory?.quantity ?? 0))
+    setError('')
+  }, [entry])
 
   async function handleSave() {
-    if (!entry) return;
-    setSaving(true);
-    setError("");
+    if (!entry) return
+    setSaving(true)
+    setError('')
     try {
       const res = await fetchAdmin(
         `${API}/api/products/admin/variants/${entry.variant.id}`,
         {
-          method: "PATCH",
+          method: 'PATCH',
           body: JSON.stringify({
             name,
             price: Number(price),
             comparePrice: comparePrice ? Number(comparePrice) : undefined,
-            quantity: Number(quantity),
-          }),
-        },
-      );
-      const data = await res.json();
-      if (!res.ok) throw new Error(data?.message ?? `Lỗi ${res.status}`);
-      onSaved(data as Variant);
+            quantity: Number(quantity)
+          })
+        }
+      )
+      const data = await res.json()
+      if (!res.ok) throw new Error(data?.message ?? `Lỗi ${res.status}`)
+      onSaved(data as Variant)
     } catch (e) {
-      setError(e instanceof Error ? e.message : "Có lỗi xảy ra");
+      setError(e instanceof Error ? e.message : 'Có lỗi xảy ra')
     } finally {
-      setSaving(false);
+      setSaving(false)
     }
   }
 
@@ -562,7 +568,7 @@ function VariantEditDialog({
       <DialogContent className="max-w-md">
         <DialogHeader>
           <DialogTitle>
-            Sửa biến thể{" "}
+            Sửa biến thể{' '}
             {entry && (
               <span className="font-mono text-sm text-muted-foreground">
                 ({entry.variant.sku})
@@ -615,11 +621,11 @@ function VariantEditDialog({
               Hủy
             </Button>
             <Button onClick={handleSave} disabled={saving}>
-              {saving ? "Đang lưu..." : "Lưu"}
+              {saving ? 'Đang lưu...' : 'Lưu'}
             </Button>
           </div>
         </div>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

@@ -1,4 +1,4 @@
-import { Type } from 'class-transformer';
+import { Type } from 'class-transformer'
 import {
   ArrayMinSize,
   IsArray,
@@ -8,59 +8,59 @@ import {
   IsOptional,
   IsString,
   Min,
-  ValidateNested,
-} from 'class-validator';
+  ValidateNested
+} from 'class-validator'
 
 export class QuickOrderItemDto {
   @IsString()
   @IsNotEmpty()
-  sku: string;
+  sku: string
 
   @IsInt()
   @Min(1)
-  qty: number;
+  qty: number
 }
 
 export class CreateQuickOrderDto {
   @IsString()
   @IsNotEmpty()
-  name: string;
+  name: string
 
   @IsString()
   @IsNotEmpty()
-  phone: string;
+  phone: string
 
   @IsString()
   @IsOptional()
-  email?: string;
+  email?: string
 
   @IsString()
   @IsNotEmpty()
-  province: string;
+  province: string
 
   @IsString()
   @IsOptional()
-  district?: string;
+  district?: string
 
   @IsString()
   @IsNotEmpty()
-  ward: string;
+  ward: string
 
   @IsString()
   @IsNotEmpty()
-  street: string;
+  street: string
 
   @IsString()
   @IsOptional()
-  note?: string;
+  note?: string
 
   @IsIn(['online', 'cod'])
   @IsOptional()
-  paymentMethod?: 'online' | 'cod';
+  paymentMethod?: 'online' | 'cod'
 
   @IsArray()
   @ArrayMinSize(1)
   @ValidateNested({ each: true })
   @Type(() => QuickOrderItemDto)
-  items: QuickOrderItemDto[];
+  items: QuickOrderItemDto[]
 }

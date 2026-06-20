@@ -1,25 +1,25 @@
-"use client";
+'use client'
 
-import { useState, useEffect } from "react";
+import { useState, useEffect } from 'react'
 
-const FB_URL = `https://www.facebook.com/${process.env.NEXT_PUBLIC_FB_PAGE_ID}`;
-const TIKTOK_URL = process.env.NEXT_PUBLIC_TIKTOK_URL ?? "#";
+const FB_URL = `https://www.facebook.com/${process.env.NEXT_PUBLIC_FB_PAGE_ID}`
+const TIKTOK_URL = process.env.NEXT_PUBLIC_TIKTOK_URL ?? '#'
 
 export function FloatingButtons() {
-  const [showScroll, setShowScroll] = useState(false);
+  const [showScroll, setShowScroll] = useState(false)
 
   useEffect(() => {
-    const onScroll = () => setShowScroll(window.scrollY > 300);
-    window.addEventListener("scroll", onScroll);
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
+    const onScroll = () => setShowScroll(window.scrollY > 300)
+    window.addEventListener('scroll', onScroll)
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   return (
     <div className="fixed bottom-24 right-10 z-50 flex flex-col items-center gap-3">
       {/* Scroll to top */}
       {showScroll && (
         <button
-          onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           aria-label="Lên đầu trang"
           className="group bg-white hover:bg-primary rounded-full shadow-xl p-3 hover:scale-110 transition-all"
         >
@@ -63,5 +63,5 @@ export function FloatingButtons() {
         </svg>
       </a>
     </div>
-  );
+  )
 }

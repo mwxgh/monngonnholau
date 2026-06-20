@@ -1,49 +1,49 @@
-import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator';
+import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator'
 
 export class UpsertAddressDto {
   @IsString()
   @IsNotEmpty()
-  fullName: string;
+  fullName: string
 
   @IsString()
   @IsNotEmpty()
-  phone: string;
+  phone: string
 
   @IsOptional()
   @IsString()
-  email?: string;
+  email?: string
 
   // new mode (v2 API – 2-level: tỉnh → xã)
   @IsOptional()
   @IsString()
-  province?: string;
+  province?: string
 
   @IsOptional()
   @IsString()
-  ward?: string;
+  ward?: string
 
   // old mode (v1 API – 3-level: tỉnh → huyện → xã)
   @IsOptional()
   @IsString()
-  oldProvince?: string;
+  oldProvince?: string
 
   @IsOptional()
   @IsString()
-  oldDistrict?: string;
+  oldDistrict?: string
 
   @IsOptional()
   @IsString()
-  oldWard?: string;
+  oldWard?: string
 
   @IsOptional()
   @IsString()
-  street?: string;
+  street?: string
 
   @IsString()
   @IsNotEmpty()
-  detail: string;
+  detail: string
 
   @IsOptional()
   @IsBoolean()
-  isDefault?: boolean;
+  isDefault?: boolean
 }

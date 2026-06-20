@@ -1,8 +1,8 @@
-import { staticUrl } from "@/lib/utils";
-import Image from "next/image";
-import Link from "next/link";
+import { staticUrl } from '@/lib/utils'
+import Image from 'next/image'
+import Link from 'next/link'
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button'
 
 export function Hero() {
   return (
@@ -11,7 +11,7 @@ export function Hero() {
       className="relative min-h-screen flex items-center"
     >
       <Image
-        src={staticUrl("images/banner.jpg")}
+        src={staticUrl('images/banner.jpg')}
         alt="banner"
         fill
         priority
@@ -24,8 +24,8 @@ export function Hero() {
             Món Ngon Nhớ Lâu - Đòn Đau ...
           </h1>
           <p className="text-white/80 lg:text-lg font-normal mb-10">
-            Thực phẩm thủ công, không chất bảo quản. Từng mẻ nhỏ được làm tỉ
-            mỉ như nấu cho chính gia đình bạn.
+            Thực phẩm thủ công, không chất bảo quản. Từng mẻ nhỏ được làm tỉ mỉ
+            như nấu cho chính gia đình bạn.
           </p>
           <div className="flex flex-wrap gap-4">
             <Button size="pill" render={<Link href="#cook-section" />}>
@@ -43,5 +43,5 @@ export function Hero() {
         </div>
       </div>
     </section>
-  );
+  )
 }

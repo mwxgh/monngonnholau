@@ -1,8 +1,12 @@
-import { Header } from "@/components/layout/header";
-import { Footer } from "@/components/layout/footer";
-import { FloatingButtons } from "@/components/layout/floating-buttons";
+import { Header } from '@/components/layout/header'
+import { Footer } from '@/components/layout/footer'
+import { FloatingButtons } from '@/components/layout/floating-buttons'
 
-export default function MainLayout({ children }: { children: React.ReactNode }) {
+export default function MainLayout({
+  children
+}: {
+  children: React.ReactNode
+}) {
   return (
     <>
       <Header />
@@ -10,5 +14,5 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       <Footer />
       <FloatingButtons />
     </>
-  );
+  )
 }

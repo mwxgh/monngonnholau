@@ -1,25 +1,25 @@
-import { IsArray, IsEnum, IsInt, IsOptional, IsString } from 'class-validator';
-import { ProductStatus } from '@prisma/client';
+import { IsArray, IsEnum, IsInt, IsOptional, IsString } from 'class-validator'
+import { ProductStatus } from '@prisma/client'
 
 export class UpdateProductDto {
   @IsOptional()
   @IsString()
-  name?: string;
+  name?: string
 
   @IsOptional()
   @IsString()
-  description?: string;
+  description?: string
 
   @IsOptional()
   @IsInt()
-  categoryId?: number;
+  categoryId?: number
 
   @IsOptional()
   @IsEnum(ProductStatus)
-  status?: ProductStatus;
+  status?: ProductStatus
 
   @IsOptional()
   @IsArray()
   @IsString({ each: true })
-  images?: string[];
+  images?: string[]
 }

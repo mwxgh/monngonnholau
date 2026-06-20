@@ -1,13 +1,13 @@
 const items = [
-  "Không chất bảo quản",
-  "Thủ công từng mẻ",
-  "Nguyên liệu tươi sạch",
-  "Made with love",
-  "100% tự nhiên",
-  "Mẹ tự tay làm",
-  "Rõ nguồn gốc",
-  "Không phụ gia",
-];
+  'Không chất bảo quản',
+  'Thủ công từng mẻ',
+  'Nguyên liệu tươi sạch',
+  'Made with love',
+  '100% tự nhiên',
+  'Mẹ tự tay làm',
+  'Rõ nguồn gốc',
+  'Không phụ gia'
+]
 
 export function Marquee() {
   return (
@@ -23,5 +23,5 @@ export function Marquee() {
         ))}
       </div>
     </div>
-  );
+  )
 }

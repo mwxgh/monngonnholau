@@ -2,11 +2,11 @@ import {
   CanActivate,
   ExecutionContext,
   ForbiddenException,
-  Injectable,
-} from '@nestjs/common';
-import { Reflector } from '@nestjs/core';
-import type { Role } from '@prisma/client';
-import { ROLES_KEY } from '../decorators/roles.decorator.js';
+  Injectable
+} from '@nestjs/common'
+import { Reflector } from '@nestjs/core'
+import type { Role } from '@prisma/client'
+import { ROLES_KEY } from '../decorators/roles.decorator.js'
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -15,14 +15,14 @@ export class RolesGuard implements CanActivate {
   canActivate(context: ExecutionContext): boolean {
     const requiredRoles = this.reflector.getAllAndOverride<Role[]>(ROLES_KEY, [
       context.getHandler(),
-      context.getClass(),
-    ]);
-    if (!requiredRoles?.length) return true;
+      context.getClass()
+    ])
+    if (!requiredRoles?.length) return true
 
-    const req = context.switchToHttp().getRequest<{ user?: { role: Role } }>();
+    const req = context.switchToHttp().getRequest<{ user?: { role: Role } }>()
     if (!req.user || !requiredRoles.includes(req.user.role)) {
-      throw new ForbiddenException('Bạn không có quyền thực hiện thao tác này');
+      throw new ForbiddenException('Bạn không có quyền thực hiện thao tác này')
     }
-    return true;
+    return true
   }
 }

@@ -1,8 +1,8 @@
-import { staticUrl } from "@/lib/utils";
-import Image from "next/image";
-import Link from "next/link";
+import { staticUrl } from '@/lib/utils'
+import Image from 'next/image'
+import Link from 'next/link'
 
-import { Button } from "@/components/ui/button";
+import { Button } from '@/components/ui/button'
 
 export function HowItWorks() {
   return (
@@ -10,7 +10,7 @@ export function HowItWorks() {
       <div className="container mx-auto max-w-7xl px-4">
         <div className="absolute right-0 bottom-[-18%] hidden lg:block">
           <Image
-            src={staticUrl("images/burger.png")}
+            src={staticUrl('images/burger.png')}
             alt="burger"
             width={463}
             height={622}
@@ -19,11 +19,11 @@ export function HowItWorks() {
         <div className="grid grid-cols-1 lg:grid-cols-12 my-16 space-x-5">
           <div className="col-span-6 flex justify-start">
             <Image
-              src={staticUrl("images/cook.png")}
+              src={staticUrl('images/cook.png')}
               alt="cook"
               width={636}
               height={808}
-              style={{ width: "100%", height: "auto" }}
+              style={{ width: '100%', height: 'auto' }}
             />
           </div>
           <div className="col-span-6 flex flex-col justify-center">
@@ -42,12 +42,16 @@ export function HowItWorks() {
               Chúng tôi tin rằng đồ ăn ngon nhất là đồ được làm bằng tâm — như
               mẹ vẫn làm cho cả gia đình mỗi ngày....
             </p>
-            <Button size="pill" className="mr-6 self-start" render={<Link href="#gallery-section" />}>
+            <Button
+              size="pill"
+              className="mr-6 self-start"
+              render={<Link href="#gallery-section" />}
+            >
               Tìm hiểu thêm
             </Button>
           </div>
         </div>
       </div>
     </section>
-  );
+  )
 }

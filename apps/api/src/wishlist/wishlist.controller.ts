@@ -1,5 +1,5 @@
-import { Controller } from '@nestjs/common';
-import { WishlistService } from './wishlist.service';
+import { Controller } from '@nestjs/common'
+import { WishlistService } from './wishlist.service'
 
 @Controller('wishlist')
 export class WishlistController {
