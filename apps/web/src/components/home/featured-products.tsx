@@ -28,8 +28,8 @@ const featuresData = [
 
 export function FeaturedProducts() {
   return (
-    <section>
-      <div className="container mx-auto max-w-7xl px-4" id="about-section">
+    <section id="about-section">
+      <div className="container mx-auto max-w-7xl px-4">
         <div className="text-center mb-14">
           <p className="text-primary text-lg font-normal mb-3 tracking-widest uppercase">
             Đặc điểm nổi bật

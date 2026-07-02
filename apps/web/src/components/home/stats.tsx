@@ -1,74 +1,44 @@
-import { staticUrl } from '@/lib/utils'
-import Image from 'next/image'
-import Link from 'next/link'
+import { ProductGrid } from './product-grid'
 
-import { Button } from '@/components/ui/button'
+interface ProductVariant {
+  id: number
+  sku: string
+  price: string
+  thumbnail: string | null
+}
 
-const galleryImages = [
-  {
-    src: staticUrl('images/foodone.jpg'),
-    name: 'Caesar Salad (187 Kcal)',
-    price: '35.000đ'
-  },
-  {
-    src: staticUrl('images/foodtwo.jpg'),
-    name: 'Salad Giáng Sinh (118 Kcal)',
-    price: '17.000đ'
-  },
-  {
-    src: staticUrl('images/foodthree.jpg'),
-    name: 'Nấm xào bí đao ớt ngọt (238 kcal)',
-    price: '45.000đ'
-  },
-  {
-    src: staticUrl('images/foodfour.jpg'),
-    name: 'BBQ Chicken Pizza (272 kcal)',
-    price: '27.000đ'
-  }
-]
+interface Product {
+  id: number
+  slug: string
+  name: string
+  images: string[]
+  variants: ProductVariant[]
+}
 
-export function Stats() {
+async function getProducts(): Promise<Product[]> {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`, {
+    next: { revalidate: 60 }
+  })
+  if (!res.ok) return []
+  return res.json()
+}
+
+export async function Stats() {
+  const products = (await getProducts()).slice(0, 4)
+
   return (
-    <section>
-      <div className="container mx-auto max-w-7xl px-4" id="gallery-section">
+    <section id="product-section">
+      <div className="container mx-auto max-w-7xl px-4">
         <div className="text-center">
           <p className="text-primary text-lg font-normal mb-3 tracking-widest uppercase">
-            Thư viện ảnh
+            Sản phẩm nổi bật
           </p>
           <h2 className="text-3xl lg:text-5xl font-semibold text-black">
             Những món ăn do chúng tôi chế biến.
           </h2>
         </div>
         <div className="my-16 px-6">
-          <div className="columns-1 sm:columns-2 gap-6">
-            {galleryImages.map((item, index) => (
-              <div
-                key={index}
-                className="overflow-hidden rounded-3xl mb-6 relative group break-inside-avoid"
-              >
-                <Image
-                  src={item.src}
-                  alt={item.name}
-                  width={600}
-                  height={500}
-                  style={{ width: '100%', height: 'auto', display: 'block' }}
-                />
-                <div className="w-full h-full absolute bg-black/40 top-full group-hover:top-0 duration-500 p-12 flex flex-col items-start gap-8 justify-end">
-                  <p className="text-white text-2xl">
-                    <span className="font-semibold">Tên:</span> {item.name}
-                  </p>
-                  <div className="flex items-center justify-between w-full">
-                    <p className="text-white text-2xl">
-                      <span className="font-semibold">Giá:</span> {item.price}
-                    </p>
-                    <Button size="pill" render={<Link href="#" />}>
-                      Tìm hiểu thêm
-                    </Button>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
+          <ProductGrid products={products} />
         </div>
       </div>
     </section>

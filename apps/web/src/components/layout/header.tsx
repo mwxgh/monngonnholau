@@ -4,16 +4,25 @@ import { staticUrl } from '@/lib/utils'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useEffect, useRef, useState } from 'react'
-import { Menu, Phone, User, LogOut, X, ShieldCheck } from 'lucide-react'
+import {
+  Menu,
+  Phone,
+  ShoppingCart,
+  User,
+  LogOut,
+  X,
+  ShieldCheck
+} from 'lucide-react'
 import { LoginModal } from '@/components/auth/login-modal'
 import { OrderModal } from '@/components/order/order-modal'
 import { Button } from '@/components/ui/button'
+import { useCart } from '@/lib/cart-context'
 
 const navLinks = [
   { href: '#home-section', label: 'Trang chủ' },
   { href: '#about-section', label: 'Về chúng tôi' },
   { href: '#product-section', label: 'Sản phẩm' },
-  { href: '#faq-section', label: 'FAQ' }
+  { href: '#faqs-section', label: 'FAQ' }
 ]
 
 export function Header() {
@@ -23,7 +32,14 @@ export function Header() {
   const [isAdmin, setIsAdmin] = useState(false)
   const [loginOpen, setLoginOpen] = useState(false)
   const [orderOpen, setOrderOpen] = useState(false)
+  const [orderView, setOrderView] = useState<'browse' | 'cart'>('browse')
   const mobileMenuRef = useRef<HTMLDivElement>(null)
+  const { itemCount } = useCart()
+
+  function openOrder(view: 'browse' | 'cart') {
+    setOrderView(view)
+    setOrderOpen(true)
+  }
 
   useEffect(() => {
     const token = localStorage.getItem('access_token')
@@ -88,13 +104,13 @@ export function Header() {
           {/* Desktop nav */}
           <nav className="hidden lg:flex grow items-center gap-8 justify-center">
             {navLinks.map(({ href, label }) => (
-              <Link
+              <a
                 key={href}
                 href={href}
                 className="text-base font-medium hover:text-primary transition-colors"
               >
                 {label}
-              </Link>
+              </a>
             ))}
           </nav>
 
@@ -107,7 +123,21 @@ export function Header() {
               <Phone className="text-primary w-6 h-6 inline-block mr-1" />
               0869 863 088
             </Link>
-            <Button size="pill" onClick={() => setOrderOpen(true)}>
+            <Button
+              variant="outline"
+              size="icon"
+              className="relative rounded-full"
+              onClick={() => openOrder('cart')}
+              aria-label="Giỏ hàng"
+            >
+              <ShoppingCart className="w-5 h-5" />
+              {itemCount > 0 && (
+                <span className="absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-semibold text-white">
+                  {itemCount}
+                </span>
+              )}
+            </Button>
+            <Button size="pill" onClick={() => openOrder('browse')}>
               Đặt hàng
             </Button>
             {isLoggedIn ? (
@@ -164,16 +194,31 @@ export function Header() {
             )}
           </div>
 
-          {/* Mobile hamburger */}
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setNavbarOpen(!navbarOpen)}
-            className="block lg:hidden"
-            aria-label="Toggle mobile menu"
-          >
-            <Menu className="w-6 h-6" />
-          </Button>
+          {/* Mobile right */}
+          <div className="flex items-center gap-1 lg:hidden">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="relative"
+              onClick={() => openOrder('cart')}
+              aria-label="Giỏ hàng"
+            >
+              <ShoppingCart className="w-6 h-6" />
+              {itemCount > 0 && (
+                <span className="absolute top-0.5 right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-white">
+                  {itemCount}
+                </span>
+              )}
+            </Button>
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setNavbarOpen(!navbarOpen)}
+              aria-label="Toggle mobile menu"
+            >
+              <Menu className="w-6 h-6" />
+            </Button>
+          </div>
         </div>
 
         {/* Mobile overlay */}
@@ -208,14 +253,14 @@ export function Header() {
           </div>
           <nav className="flex flex-col items-start p-4">
             {navLinks.map(({ href, label }) => (
-              <Link
+              <a
                 key={href}
                 href={href}
                 onClick={() => setNavbarOpen(false)}
                 className="text-base font-medium text-white/80 hover:text-primary py-2.5 px-3 w-full transition-colors"
               >
                 {label}
-              </Link>
+              </a>
             ))}
             <div className="mt-4 flex flex-col gap-3 w-full">
               <Button
@@ -223,7 +268,7 @@ export function Header() {
                 className="w-full"
                 onClick={() => {
                   setNavbarOpen(false)
-                  setOrderOpen(true)
+                  openOrder('browse')
                 }}
               >
                 Đặt hàng
@@ -293,7 +338,11 @@ export function Header() {
         </div>
       </div>
 
-      <OrderModal open={orderOpen} onClose={() => setOrderOpen(false)} />
+      <OrderModal
+        open={orderOpen}
+        onClose={() => setOrderOpen(false)}
+        initialView={orderView}
+      />
 
       <LoginModal
         open={loginOpen}

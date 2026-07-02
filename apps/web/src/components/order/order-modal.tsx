@@ -17,6 +17,7 @@ import {
 } from '@/components/ui/form'
 import { AcInput } from '@/components/ui/ac-input'
 import { cn } from '@/lib/utils'
+import { useCart } from '@/lib/cart-context'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -301,6 +302,7 @@ function PaymentStep({
 interface OrderModalProps {
   open: boolean
   onClose: () => void
+  initialView?: 'browse' | 'cart'
 }
 
 // ── Component ──────────────────────────────────────────────────────────────
@@ -312,8 +314,14 @@ interface PaymentInfo {
   total: number
 }
 
-export function OrderModal({ open, onClose }: OrderModalProps) {
+export function OrderModal({
+  open,
+  onClose,
+  initialView = 'browse'
+}: OrderModalProps) {
+  const savedCart = useCart()
   const [step, setStep] = useState<1 | 2 | 3 | 'success'>(1)
+  const [view, setView] = useState<'browse' | 'cart'>(initialView)
 
   // Products
   const [products, setProducts] = useState<Product[]>([])
@@ -322,6 +330,12 @@ export function OrderModal({ open, onClose }: OrderModalProps) {
   const [cart, setCart] = useState<
     Record<number, { selectedSku: string; qty: number }>
   >({})
+
+  // Reset to the requested view every time the modal opens
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    if (open) setView(initialView)
+  }, [open, initialView])
 
   // Address data
   const [provinces, setProvinces] = useState<Province[]>([])
@@ -383,8 +397,13 @@ export function OrderModal({ open, onClose }: OrderModalProps) {
           setShippingFee(Number(settings.shipping_fee))
         const init: Record<number, { selectedSku: string; qty: number }> = {}
         productData.forEach((p) => {
-          if (p.variants.length > 0)
-            init[p.id] = { selectedSku: p.variants[0].sku, qty: 0 }
+          if (p.variants.length === 0) return
+          const saved = savedCart.items.find((i) => i.productId === p.id)
+          const selectedSku = saved
+            ? (p.variants.find((v) => v.sku === saved.sku)?.sku ??
+              p.variants[0].sku)
+            : p.variants[0].sku
+          init[p.id] = { selectedSku, qty: saved?.qty ?? 0 }
         })
         setCart(init)
       })
@@ -496,6 +515,20 @@ export function OrderModal({ open, onClose }: OrderModalProps) {
     ]
   })
 
+  // Keep the persisted cart (localStorage) in sync while the picker is open
+  useEffect(() => {
+    if (!open || loadingProducts) return
+    const next = Object.entries(cart)
+      .filter(([, row]) => row.qty > 0)
+      .map(([productId, row]) => ({
+        productId: Number(productId),
+        sku: row.selectedSku,
+        qty: row.qty
+      }))
+    savedCart.replaceAll(next)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [cart, open, loadingProducts])
+
   const subtotal = cartItems.reduce((s, i) => s + i.price * i.qty, 0)
   const total = subtotal + shippingFee
   const hasItems = cartItems.length > 0
@@ -528,6 +561,7 @@ export function OrderModal({ open, onClose }: OrderModalProps) {
         return
       }
       setOrderId(data.orderId)
+      savedCart.clear()
       if (data.qrCode) {
         setPaymentInfo({
           qrCode: data.qrCode,
@@ -555,10 +589,12 @@ export function OrderModal({ open, onClose }: OrderModalProps) {
           <div className="flex flex-col max-h-[90vh]">
             <div className="px-6 pt-6 pb-4 border-b shrink-0">
               <h2 className="text-xl font-bold text-neutral-800">
-                Đặt hàng nhanh
+                {view === 'cart' ? 'Giỏ hàng của bạn' : 'Đặt hàng nhanh'}
               </h2>
               <p className="mt-0.5 text-sm text-neutral-500">
-                Chọn sản phẩm và số lượng bạn muốn đặt
+                {view === 'cart'
+                  ? 'Sản phẩm bạn đã thêm vào giỏ'
+                  : 'Chọn sản phẩm và số lượng bạn muốn đặt'}
               </p>
             </div>
 
@@ -580,86 +616,106 @@ export function OrderModal({ open, onClose }: OrderModalProps) {
                     Thử lại
                   </button>
                 </div>
+              ) : view === 'cart' &&
+                products.every((p) => (cart[p.id]?.qty ?? 0) === 0) ? (
+                <div className="flex flex-col items-center justify-center py-10 gap-3 text-center">
+                  <p className="text-sm text-muted-foreground">
+                    Giỏ hàng của bạn đang trống.
+                  </p>
+                  <button
+                    type="button"
+                    onClick={() => setView('browse')}
+                    className="h-8 px-4 rounded-lg border border-primary text-primary text-sm font-medium hover:bg-primary/5 transition-colors"
+                  >
+                    Xem tất cả sản phẩm
+                  </button>
+                </div>
               ) : (
                 <div className="space-y-3">
-                  {products.map((product) => {
-                    const row = cart[product.id]
-                    if (!row) return null
-                    const variant = product.variants.find(
-                      (v) => v.sku === row.selectedSku
+                  {products
+                    .filter((product) =>
+                      view === 'cart' ? (cart[product.id]?.qty ?? 0) > 0 : true
                     )
-                    const price = variant ? Number(variant.price) : 0
-                    const comparePrice = variant?.comparePrice
-                      ? Number(variant.comparePrice)
-                      : null
-                    return (
-                      <div
-                        key={product.id}
-                        className={cn(
-                          'rounded-xl border p-4 transition-colors',
-                          row.qty > 0
-                            ? 'border-primary/40 bg-primary/5'
-                            : 'border-border bg-card'
-                        )}
-                      >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="flex-1 min-w-0">
-                            <p className="font-semibold text-sm">
-                              {product.name}
-                            </p>
-                            {product.description && (
-                              <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
-                                {product.description}
+                    .map((product) => {
+                      const row = cart[product.id]
+                      if (!row) return null
+                      const variant = product.variants.find(
+                        (v) => v.sku === row.selectedSku
+                      )
+                      const price = variant ? Number(variant.price) : 0
+                      const comparePrice = variant?.comparePrice
+                        ? Number(variant.comparePrice)
+                        : null
+                      return (
+                        <div
+                          key={product.id}
+                          className={cn(
+                            'rounded-xl border p-4 transition-colors',
+                            row.qty > 0
+                              ? 'border-primary/40 bg-primary/5'
+                              : 'border-border bg-card'
+                          )}
+                        >
+                          <div className="flex items-start justify-between gap-3">
+                            <div className="flex-1 min-w-0">
+                              <p className="font-semibold text-sm">
+                                {product.name}
                               </p>
-                            )}
-                          </div>
-                          <div className="text-right shrink-0">
-                            <span className="text-sm font-bold text-primary">
-                              {formatVND(price)}
-                            </span>
-                            {comparePrice && (
-                              <span className="text-xs text-muted-foreground line-through ml-1.5">
-                                {formatVND(comparePrice)}
+                              {product.description && (
+                                <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">
+                                  {product.description}
+                                </p>
+                              )}
+                            </div>
+                            <div className="text-right shrink-0">
+                              <span className="text-sm font-bold text-primary">
+                                {formatVND(price)}
                               </span>
-                            )}
+                              {comparePrice && (
+                                <span className="text-xs text-muted-foreground line-through ml-1.5">
+                                  {formatVND(comparePrice)}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="mt-3 flex items-center gap-3 flex-wrap">
+                            <select
+                              value={row.selectedSku}
+                              onChange={(e) =>
+                                setSku(product.id, e.target.value)
+                              }
+                              className="flex-1 min-w-0 h-8 rounded-md border border-input bg-background px-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30"
+                            >
+                              {product.variants.map((v) => (
+                                <option key={v.sku} value={v.sku}>
+                                  {v.name} — {formatVND(Number(v.price))}
+                                </option>
+                              ))}
+                            </select>
+                            <div className="flex items-center gap-1 shrink-0">
+                              <button
+                                type="button"
+                                onClick={() => setQty(product.id, -1)}
+                                disabled={row.qty === 0}
+                                className="w-7 h-7 rounded-md border border-border flex items-center justify-center text-muted-foreground hover:border-primary hover:text-primary disabled:opacity-30 transition-colors"
+                              >
+                                <Minus className="w-3 h-3" />
+                              </button>
+                              <span className="w-8 text-center text-sm font-medium tabular-nums">
+                                {row.qty}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => setQty(product.id, 1)}
+                                className="w-7 h-7 rounded-md border border-border flex items-center justify-center text-muted-foreground hover:border-primary hover:text-primary transition-colors"
+                              >
+                                <Plus className="w-3 h-3" />
+                              </button>
+                            </div>
                           </div>
                         </div>
-                        <div className="mt-3 flex items-center gap-3 flex-wrap">
-                          <select
-                            value={row.selectedSku}
-                            onChange={(e) => setSku(product.id, e.target.value)}
-                            className="flex-1 min-w-0 h-8 rounded-md border border-input bg-background px-2 text-xs focus:outline-none focus:ring-2 focus:ring-primary/30"
-                          >
-                            {product.variants.map((v) => (
-                              <option key={v.sku} value={v.sku}>
-                                {v.name} — {formatVND(Number(v.price))}
-                              </option>
-                            ))}
-                          </select>
-                          <div className="flex items-center gap-1 shrink-0">
-                            <button
-                              type="button"
-                              onClick={() => setQty(product.id, -1)}
-                              disabled={row.qty === 0}
-                              className="w-7 h-7 rounded-md border border-border flex items-center justify-center text-muted-foreground hover:border-primary hover:text-primary disabled:opacity-30 transition-colors"
-                            >
-                              <Minus className="w-3 h-3" />
-                            </button>
-                            <span className="w-8 text-center text-sm font-medium tabular-nums">
-                              {row.qty}
-                            </span>
-                            <button
-                              type="button"
-                              onClick={() => setQty(product.id, 1)}
-                              className="w-7 h-7 rounded-md border border-border flex items-center justify-center text-muted-foreground hover:border-primary hover:text-primary transition-colors"
-                            >
-                              <Plus className="w-3 h-3" />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    )
-                  })}
+                      )
+                    })}
                 </div>
               )}
             </div>
