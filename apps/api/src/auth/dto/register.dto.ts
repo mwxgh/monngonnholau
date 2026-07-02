@@ -1,17 +1,19 @@
-import { IsEmail, IsOptional, IsString, MinLength } from 'class-validator'
+import {
+  EmailField,
+  StringField,
+  StringFieldOptional
+} from '@repo/nest-decorators'
 
 export class RegisterDto {
-  @IsEmail()
-  email: string
+  @EmailField()
+  email!: string
 
-  @IsString()
-  @MinLength(6)
-  password: string
+  @StringField({ minLength: 6 })
+  password!: string
 
-  @IsOptional()
-  @IsString()
+  @StringFieldOptional()
   name?: string
 
-  @IsString()
-  phone: string
+  @StringField()
+  phone!: string
 }

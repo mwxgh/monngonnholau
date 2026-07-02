@@ -1,66 +1,49 @@
-import { Type } from 'class-transformer'
+import { PaymentMethod } from '@prisma/client'
 import {
-  ArrayMinSize,
-  IsArray,
-  IsIn,
-  IsInt,
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  Min,
-  ValidateNested
-} from 'class-validator'
+  ClassField,
+  EmailFieldOptional,
+  EnumFieldOptional,
+  NumberField,
+  StringField,
+  StringFieldOptional
+} from '@repo/nest-decorators'
 
 export class QuickOrderItemDto {
-  @IsString()
-  @IsNotEmpty()
-  sku: string
+  @StringField()
+  sku!: string
 
-  @IsInt()
-  @Min(1)
-  qty: number
+  @NumberField({ int: true, min: 1 })
+  qty!: number
 }
 
 export class CreateQuickOrderDto {
-  @IsString()
-  @IsNotEmpty()
-  name: string
+  @StringField()
+  name!: string
 
-  @IsString()
-  @IsNotEmpty()
-  phone: string
+  @StringField()
+  phone!: string
 
-  @IsString()
-  @IsOptional()
+  @EmailFieldOptional()
   email?: string
 
-  @IsString()
-  @IsNotEmpty()
-  province: string
+  @StringField()
+  province!: string
 
-  @IsString()
-  @IsOptional()
+  @StringFieldOptional()
   district?: string
 
-  @IsString()
-  @IsNotEmpty()
-  ward: string
+  @StringField()
+  ward!: string
 
-  @IsString()
-  @IsNotEmpty()
-  street: string
+  @StringField()
+  street!: string
 
-  @IsString()
-  @IsOptional()
+  @StringFieldOptional()
   note?: string
 
-  @IsIn(['online', 'cod'])
-  @IsOptional()
-  paymentMethod?: 'online' | 'cod'
+  @EnumFieldOptional(() => PaymentMethod)
+  paymentMethod?: PaymentMethod
 
-  @IsArray()
-  @ArrayMinSize(1)
-  @ValidateNested({ each: true })
-  @Type(() => QuickOrderItemDto)
-  items: QuickOrderItemDto[]
+  @ClassField(() => QuickOrderItemDto, { each: true, minSize: 1 })
+  items!: QuickOrderItemDto[]
 }

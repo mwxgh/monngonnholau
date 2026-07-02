@@ -2,7 +2,12 @@ import { createHmac } from 'crypto'
 import { BadRequestException, Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { PayOS } from '@payos/node'
-import { OrderStatus, Prisma } from '@prisma/client'
+import {
+  OrderStatus,
+  PaymentMethod,
+  PaymentStatus,
+  Prisma
+} from '@prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 import { MailService } from '../mail/mail.service'
 import { CreateQuickOrderDto } from './dto/create-quick-order.dto'
@@ -111,13 +116,13 @@ export class OrdersService {
       }
     })
 
-    const isCod = dto.paymentMethod === 'cod'
+    const isCod = dto.paymentMethod === PaymentMethod.COD
     const order = await this.prisma.order.create({
       data: {
         addressId: address.id,
         note: dto.note ?? null,
-        status: isCod ? 'PROCESSING' : 'PENDING_PAYMENT',
-        paymentMethod: isCod ? 'COD' : 'ONLINE',
+        status: isCod ? OrderStatus.PROCESSING : OrderStatus.PENDING_PAYMENT,
+        paymentMethod: isCod ? PaymentMethod.COD : PaymentMethod.ONLINE,
         subtotal,
         shippingFee,
         discount: 0,
@@ -148,7 +153,7 @@ export class OrdersService {
     }
 
     // Create PayOS payment link
-    if (!this.payos || dto.paymentMethod === 'cod') {
+    if (!this.payos || dto.paymentMethod === PaymentMethod.COD) {
       return { orderId: order.id, total }
     }
 
@@ -179,7 +184,7 @@ export class OrdersService {
           description: desc,
           checkoutUrl: paymentLink.checkoutUrl,
           qrCode: paymentLink.qrCode,
-          status: 'PENDING',
+          status: PaymentStatus.PENDING,
           expiredAt: new Date(Date.now() + 15 * 60 * 1000)
         }
       })
@@ -215,7 +220,7 @@ export class OrdersService {
     const payment = order.payment
 
     // Already paid or no PayOS payment — return DB state directly
-    if (!payment || payment.status === 'PAID' || !this.payos) {
+    if (!payment || payment.status === PaymentStatus.PAID || !this.payos) {
       return {
         orderStatus: order.status,
         paymentStatus: payment?.status ?? null
@@ -231,14 +236,17 @@ export class OrdersService {
         await this.prisma.$transaction([
           this.prisma.payment.update({
             where: { id: payment.id },
-            data: { status: 'PAID', paidAt: new Date() }
+            data: { status: PaymentStatus.PAID, paidAt: new Date() }
           }),
           this.prisma.order.update({
             where: { id: orderId },
-            data: { status: 'PAID' }
+            data: { status: OrderStatus.PAID }
           })
         ])
-        return { orderStatus: 'PAID', paymentStatus: 'PAID' }
+        return {
+          orderStatus: OrderStatus.PAID,
+          paymentStatus: PaymentStatus.PAID
+        }
       }
     } catch (err) {
       this.logger.warn(`PayOS status check failed: ${(err as Error).message}`)
@@ -311,13 +319,13 @@ export class OrdersService {
     }
 
     // Already processed
-    if (payment.status === 'PAID') return { success: true }
+    if (payment.status === PaymentStatus.PAID) return { success: true }
 
     await this.prisma.$transaction([
       this.prisma.payment.update({
         where: { id: payment.id },
         data: {
-          status: 'PAID',
+          status: PaymentStatus.PAID,
           paidAt: new Date(),
           gatewayData: body as Prisma.InputJsonValue
         }
@@ -326,7 +334,7 @@ export class OrdersService {
         ? [
             this.prisma.order.update({
               where: { id: payment.order.id },
-              data: { status: 'PAID' }
+              data: { status: OrderStatus.PAID }
             })
           ]
         : [])

@@ -1,24 +1,19 @@
 import { applyDecorators } from '@nestjs/common'
 import { ApiProperty, ApiPropertyOptions } from '@nestjs/swagger'
 import { Type } from 'class-transformer'
-import {
-  IsNotEmpty,
-  IsOptional,
-  IsString,
-  MaxLength,
-  MinLength
-} from 'class-validator'
-import { Trim } from './transform.decorator'
+import { IsEmail, IsNotEmpty, IsOptional } from 'class-validator'
+import { ToLowerCase, Trim } from './transform.decorator'
 import { IsNullable, IsUndefinable } from './validator.decorator'
-import { IStringFieldOptions } from './types'
+import { IFieldOptions } from './types'
 
-export const StringField = (
-  options: ApiPropertyOptions & IStringFieldOptions = {}
+export const EmailField = (
+  options: ApiPropertyOptions & IFieldOptions = {}
 ): PropertyDecorator => {
   const decorators = [
     Type(() => String),
     Trim,
-    IsString({ each: options.each })
+    ToLowerCase(),
+    IsEmail({}, { each: options.each })
   ]
 
   if (options.nullable) {
@@ -36,23 +31,14 @@ export const StringField = (
     )
   }
 
-  if (options.minLength) {
-    decorators.push(MinLength(options.minLength, { each: options.each }))
-  }
-
-  if (options.maxLength) {
-    decorators.push(MaxLength(options.maxLength, { each: options.each }))
-  }
-
   return applyDecorators(...decorators)
 }
 
-export const StringFieldOptional = (
-  options: Omit<ApiPropertyOptions, 'type' | 'required'> &
-    IStringFieldOptions = {}
+export const EmailFieldOptional = (
+  options: Omit<ApiPropertyOptions, 'type' | 'required'> & IFieldOptions = {}
 ): PropertyDecorator => {
   return applyDecorators(
     IsUndefinable(),
-    StringField({ required: false, nullable: true, ...options })
+    EmailField({ required: false, nullable: true, ...options })
   )
 }

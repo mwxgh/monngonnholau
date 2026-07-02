@@ -338,7 +338,7 @@ export function OrderModal({ open, onClose }: OrderModalProps) {
   >(null)
 
   // Payment method
-  const [paymentMethod, setPaymentMethod] = useState<'online' | 'cod'>('online')
+  const [paymentMethod, setPaymentMethod] = useState<'ONLINE' | 'COD'>('ONLINE')
 
   // Submit
   const [serverError, setServerError] = useState('')
@@ -449,7 +449,7 @@ export function OrderModal({ open, onClose }: OrderModalProps) {
       setServerError('')
       setOrderId(null)
       setPaymentInfo(null)
-      setPaymentMethod('online')
+      setPaymentMethod('ONLINE')
       setSelectedProvinceCode(null)
       setSelectedDistrictCode(null)
       setDistricts([])
@@ -926,10 +926,10 @@ export function OrderModal({ open, onClose }: OrderModalProps) {
                     <div className="grid grid-cols-2 gap-2">
                       <button
                         type="button"
-                        onClick={() => setPaymentMethod('online')}
+                        onClick={() => setPaymentMethod('ONLINE')}
                         className={cn(
                           'flex items-center gap-2.5 rounded-xl border p-3 text-left transition-colors',
-                          paymentMethod === 'online'
+                          paymentMethod === 'ONLINE'
                             ? 'border-primary bg-primary/5 ring-1 ring-primary'
                             : 'border-border hover:border-primary/40'
                         )}
@@ -937,7 +937,7 @@ export function OrderModal({ open, onClose }: OrderModalProps) {
                         <CreditCard
                           className={cn(
                             'w-5 h-5 shrink-0',
-                            paymentMethod === 'online'
+                            paymentMethod === 'ONLINE'
                               ? 'text-primary'
                               : 'text-muted-foreground'
                           )}
@@ -953,10 +953,10 @@ export function OrderModal({ open, onClose }: OrderModalProps) {
                       </button>
                       <button
                         type="button"
-                        onClick={() => setPaymentMethod('cod')}
+                        onClick={() => setPaymentMethod('COD')}
                         className={cn(
                           'flex items-center gap-2.5 rounded-xl border p-3 text-left transition-colors',
-                          paymentMethod === 'cod'
+                          paymentMethod === 'COD'
                             ? 'border-primary bg-primary/5 ring-1 ring-primary'
                             : 'border-border hover:border-primary/40'
                         )}
@@ -964,7 +964,7 @@ export function OrderModal({ open, onClose }: OrderModalProps) {
                         <Truck
                           className={cn(
                             'w-5 h-5 shrink-0',
-                            paymentMethod === 'cod'
+                            paymentMethod === 'COD'
                               ? 'text-primary'
                               : 'text-muted-foreground'
                           )}
@@ -1022,7 +1022,7 @@ export function OrderModal({ open, onClose }: OrderModalProps) {
               >
                 {form.formState.isSubmitting
                   ? 'Đang đặt hàng...'
-                  : paymentMethod === 'online'
+                  : paymentMethod === 'ONLINE'
                     ? `Thanh toán ngay — ${formatVND(total)}`
                     : `Đặt hàng (COD) — ${formatVND(total)}`}
               </button>

@@ -6,6 +6,7 @@ import {
   ParseIntPipe,
   Patch
 } from '@nestjs/common'
+import { Role } from '@prisma/client'
 import { ProductsService } from './products.service'
 import { Public } from '../auth/decorators/public.decorator'
 import { Roles } from '../auth/decorators/roles.decorator'
@@ -22,13 +23,13 @@ export class ProductsController {
     return this.productsService.findAllPublic()
   }
 
-  @Roles('ADMIN', 'STAFF')
+  @Roles(Role.ADMIN, Role.STAFF)
   @Get('admin')
   findAllAdmin() {
     return this.productsService.findAllAdmin()
   }
 
-  @Roles('ADMIN', 'STAFF')
+  @Roles(Role.ADMIN, Role.STAFF)
   @Patch('admin/variants/:id')
   updateVariant(
     @Param('id', ParseIntPipe) id: number,
@@ -37,7 +38,7 @@ export class ProductsController {
     return this.productsService.updateVariant(id, dto)
   }
 
-  @Roles('ADMIN', 'STAFF')
+  @Roles(Role.ADMIN, Role.STAFF)
   @Patch('admin/:id')
   updateProduct(
     @Param('id', ParseIntPipe) id: number,

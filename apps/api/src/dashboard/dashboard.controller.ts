@@ -1,4 +1,5 @@
 import { Body, Controller, Get, Patch } from '@nestjs/common'
+import { Role } from '@prisma/client'
 import { Roles } from '../auth/decorators/roles.decorator'
 import { Public } from '../auth/decorators/public.decorator'
 import { DashboardService } from './dashboard.service'
@@ -7,31 +8,31 @@ import { DashboardService } from './dashboard.service'
 export class DashboardController {
   constructor(private readonly dashboardService: DashboardService) {}
 
-  @Roles('ADMIN', 'STAFF')
+  @Roles(Role.ADMIN, Role.STAFF)
   @Get()
   getStats() {
     return this.dashboardService.getStats()
   }
 
-  @Roles('ADMIN', 'STAFF')
+  @Roles(Role.ADMIN, Role.STAFF)
   @Get('customers')
   getCustomers() {
     return this.dashboardService.getCustomers()
   }
 
-  @Roles('ADMIN', 'STAFF')
+  @Roles(Role.ADMIN, Role.STAFF)
   @Get('analytics')
   getAnalytics() {
     return this.dashboardService.getAnalytics()
   }
 
-  @Roles('ADMIN', 'STAFF')
+  @Roles(Role.ADMIN, Role.STAFF)
   @Get('settings')
   getSettings() {
     return this.dashboardService.getSettings()
   }
 
-  @Roles('ADMIN', 'STAFF')
+  @Roles(Role.ADMIN, Role.STAFF)
   @Patch('settings')
   updateSettings(@Body() body: Record<string, string>) {
     return this.dashboardService.updateSettings(body)

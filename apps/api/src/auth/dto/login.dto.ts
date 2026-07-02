@@ -1,9 +1,9 @@
-import { IsString } from 'class-validator'
+import { StringField } from '@repo/nest-decorators'
 
 export class LoginDto {
-  @IsString()
-  identifier: string // email hoặc số điện thoại
+  @StringField()
+  identifier!: string // email hoặc số điện thoại
 
-  @IsString()
-  password: string
+  @StringField()
+  password!: string
 }

@@ -1,49 +1,43 @@
-import { IsBoolean, IsNotEmpty, IsOptional, IsString } from 'class-validator'
+import {
+  BooleanFieldOptional,
+  EmailFieldOptional,
+  StringField,
+  StringFieldOptional
+} from '@repo/nest-decorators'
 
 export class UpsertAddressDto {
-  @IsString()
-  @IsNotEmpty()
-  fullName: string
+  @StringField()
+  fullName!: string
 
-  @IsString()
-  @IsNotEmpty()
-  phone: string
+  @StringField()
+  phone!: string
 
-  @IsOptional()
-  @IsString()
+  @EmailFieldOptional()
   email?: string
 
   // new mode (v2 API – 2-level: tỉnh → xã)
-  @IsOptional()
-  @IsString()
+  @StringFieldOptional()
   province?: string
 
-  @IsOptional()
-  @IsString()
+  @StringFieldOptional()
   ward?: string
 
   // old mode (v1 API – 3-level: tỉnh → huyện → xã)
-  @IsOptional()
-  @IsString()
+  @StringFieldOptional()
   oldProvince?: string
 
-  @IsOptional()
-  @IsString()
+  @StringFieldOptional()
   oldDistrict?: string
 
-  @IsOptional()
-  @IsString()
+  @StringFieldOptional()
   oldWard?: string
 
-  @IsOptional()
-  @IsString()
+  @StringFieldOptional()
   street?: string
 
-  @IsString()
-  @IsNotEmpty()
-  detail: string
+  @StringField()
+  detail!: string
 
-  @IsOptional()
-  @IsBoolean()
+  @BooleanFieldOptional()
   isDefault?: boolean
 }

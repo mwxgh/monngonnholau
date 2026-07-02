@@ -1,11 +1,9 @@
-import { IsOptional, IsString } from 'class-validator'
+import { StringFieldOptional } from '@repo/nest-decorators'
 
 export class UpdateProfileDto {
-  @IsOptional()
-  @IsString()
+  @StringFieldOptional()
   name?: string
 
-  @IsOptional()
-  @IsString()
+  @StringFieldOptional()
   phone?: string
 }

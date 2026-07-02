@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common'
+import { ProductStatus } from '@prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 import { UpdateProductDto } from './dto/update-product.dto'
 import { UpdateVariantDto } from './dto/update-variant.dto'
@@ -17,7 +18,7 @@ export class ProductsService {
 
   findAllPublic() {
     return this.prisma.product.findMany({
-      where: { status: 'ACTIVE' },
+      where: { status: ProductStatus.ACTIVE },
       orderBy: { createdAt: 'asc' },
       include: {
         variants: {

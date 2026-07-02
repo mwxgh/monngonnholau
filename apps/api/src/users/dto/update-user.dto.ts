@@ -1,20 +1,16 @@
-import { IsEnum, IsOptional, IsString } from 'class-validator'
 import { Role } from '@prisma/client'
+import { EnumFieldOptional, StringFieldOptional } from '@repo/nest-decorators'
 
 export class UpdateUserDto {
-  @IsOptional()
-  @IsString()
+  @StringFieldOptional()
   name?: string
 
-  @IsOptional()
-  @IsString()
+  @StringFieldOptional()
   phone?: string
 
-  @IsOptional()
-  @IsString()
+  @StringFieldOptional()
   avatar?: string
 
-  @IsOptional()
-  @IsEnum(Role)
+  @EnumFieldOptional(() => Role)
   role?: Role
 }

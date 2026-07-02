@@ -14,3 +14,8 @@ export type INumberFieldOptions = IFieldOptions & {
   max?: number
   int?: boolean
 }
+
+export type IClassFieldOptions = IFieldOptions & {
+  minSize?: number
+  maxSize?: number
+}

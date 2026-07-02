@@ -8,6 +8,7 @@ import {
   Patch,
   Post
 } from '@nestjs/common'
+import { Role } from '@prisma/client'
 import { OrdersService } from './orders.service'
 import { Public } from '../auth/decorators/public.decorator'
 import { Roles } from '../auth/decorators/roles.decorator'
@@ -29,13 +30,13 @@ export class OrdersController {
     return this.ordersService.getQuickOrderPaymentStatus(id)
   }
 
-  @Roles('ADMIN', 'STAFF')
+  @Roles(Role.ADMIN, Role.STAFF)
   @Get('admin')
   findAllAdmin() {
     return this.ordersService.findAllAdmin()
   }
 
-  @Roles('ADMIN', 'STAFF')
+  @Roles(Role.ADMIN, Role.STAFF)
   @Patch('admin/:id/status')
   updateStatus(
     @Param('id', ParseIntPipe) id: number,

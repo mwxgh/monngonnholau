@@ -1,12 +1,12 @@
 import { Injectable } from '@nestjs/common'
-import { OrderStatus } from '@prisma/client'
+import { OrderStatus, PaymentMethod, ProductStatus } from '@prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 
 const PAID_STATUSES: OrderStatus[] = [
-  'PAID',
-  'PROCESSING',
-  'SHIPPING',
-  'DELIVERED'
+  OrderStatus.PAID,
+  OrderStatus.PROCESSING,
+  OrderStatus.SHIPPING,
+  OrderStatus.DELIVERED
 ]
 
 @Injectable()
@@ -41,9 +41,7 @@ export class DashboardService {
         email: a.email,
         totalOrders: a.orders.length,
         totalSpent: a.orders
-          .filter((o) =>
-            ['PAID', 'PROCESSING', 'SHIPPING', 'DELIVERED'].includes(o.status)
-          )
+          .filter((o) => PAID_STATUSES.includes(o.status))
           .reduce((s, o) => s + Number(o.total), 0),
         lastOrderAt:
           a.orders.length > 0
@@ -82,12 +80,12 @@ export class DashboardService {
     }
 
     // Payment method breakdown
-    const paymentCount = { ONLINE: 0, COD: 0 }
-    const paymentRevenue = { ONLINE: 0, COD: 0 }
+    const paymentCount = { [PaymentMethod.ONLINE]: 0, [PaymentMethod.COD]: 0 }
+    const paymentRevenue = { [PaymentMethod.ONLINE]: 0, [PaymentMethod.COD]: 0 }
     for (const o of orders) {
-      const m = o.paymentMethod as 'ONLINE' | 'COD'
+      const m = o.paymentMethod
       paymentCount[m] = (paymentCount[m] ?? 0) + 1
-      if (['PAID', 'PROCESSING', 'SHIPPING', 'DELIVERED'].includes(o.status)) {
+      if (PAID_STATUSES.includes(o.status)) {
         paymentRevenue[m] = (paymentRevenue[m] ?? 0) + Number(o.total)
       }
     }
@@ -166,7 +164,9 @@ export class DashboardService {
 
       this.prisma.order.count(),
 
-      this.prisma.product.count({ where: { status: 'ACTIVE' } }),
+      this.prisma.product.count({
+        where: { status: ProductStatus.ACTIVE }
+      }),
 
       // Unique customers by phone
       this.prisma.address.findMany({ select: { phone: true } }),

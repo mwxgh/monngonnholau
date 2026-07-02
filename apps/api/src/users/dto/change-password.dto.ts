@@ -1,10 +1,9 @@
-import { IsString, MinLength } from 'class-validator'
+import { StringField } from '@repo/nest-decorators'
 
 export class ChangePasswordDto {
-  @IsString()
-  oldPassword: string
+  @StringField()
+  oldPassword!: string
 
-  @IsString()
-  @MinLength(6)
-  newPassword: string
+  @StringField({ minLength: 6 })
+  newPassword!: string
 }
