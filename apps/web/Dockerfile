@@ -3,16 +3,22 @@ ENV PNPM_HOME="/pnpm"
 ENV PATH="$PNPM_HOME:$PATH"
 RUN corepack enable
 
+# ── Prune ──────────────────────────────────────────────────────────────────────
+FROM base AS pruner
+WORKDIR /app
+RUN npm install -g turbo
+COPY . .
+# Trims the monorepo down to just web + the workspace packages it actually depends on
+RUN turbo prune web --docker
+
 # ── Build ──────────────────────────────────────────────────────────────────────
 FROM base AS builder
 WORKDIR /app
-# Copy manifests only → pnpm install gets its own cached layer
-COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
-COPY packages/ ./packages/
-COPY apps/web/package.json ./apps/web/package.json
+# Pruned manifests only → pnpm install gets its own cached layer
+COPY --from=pruner /app/out/json/ ./
 RUN pnpm install --frozen-lockfile
-# Copy source after deps are cached, then build
-COPY apps/web/ ./apps/web/
+# Pruned source, copied after deps are cached, then build
+COPY --from=pruner /app/out/full/ ./
 ENV NEXT_TELEMETRY_DISABLED=1
 ARG NEXT_PUBLIC_API_URL=https://api.monngonnholau.online
 ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
