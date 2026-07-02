@@ -11,6 +11,8 @@ COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY packages/ ./packages/
 COPY apps/api/package.json ./apps/api/package.json
 RUN pnpm install --frozen-lockfile
+# workspace deps ship as compiled dist/ (gitignored + dockerignored), build before api
+RUN pnpm --filter=@repo/nest-decorators build
 # Copy source after deps are cached, then build
 COPY apps/api/ ./apps/api/
 RUN DATABASE_URL=postgres://x:x@localhost:5432/x pnpm --filter=api exec prisma generate
@@ -22,6 +24,7 @@ WORKDIR /app
 # Only the files pnpm deploy actually needs
 COPY package.json pnpm-workspace.yaml pnpm-lock.yaml ./
 COPY packages/ ./packages/
+COPY --from=builder /app/packages/nest-decorators/dist ./packages/nest-decorators/dist
 COPY apps/api/package.json    ./apps/api/package.json
 COPY apps/api/prisma/         ./apps/api/prisma/
 COPY apps/api/prisma.config.ts ./apps/api/prisma.config.ts
