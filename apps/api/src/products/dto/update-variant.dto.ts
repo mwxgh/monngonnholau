@@ -1,22 +1,30 @@
-import { IsInt, IsNumber, IsOptional, IsString, Min } from 'class-validator'
+import { NumberFieldOptional, StringFieldOptional } from '@repo/nest-decorators'
 
 export class UpdateVariantDto {
-  @IsOptional()
-  @IsString()
+  @StringFieldOptional()
+  sku?: string
+
+  @StringFieldOptional()
   name?: string
 
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
+  @NumberFieldOptional({ min: 0 })
   price?: number
 
-  @IsOptional()
-  @IsNumber()
-  @Min(0)
+  @NumberFieldOptional({ min: 0 })
   comparePrice?: number
 
-  @IsOptional()
-  @IsInt()
-  @Min(0)
+  @NumberFieldOptional({ min: 0, int: true })
   quantity?: number
+
+  @NumberFieldOptional({ min: 0 })
+  weight?: number
+
+  @NumberFieldOptional({ min: 0 })
+  length?: number
+
+  @NumberFieldOptional({ min: 0 })
+  width?: number
+
+  @NumberFieldOptional({ min: 0 })
+  height?: number
 }

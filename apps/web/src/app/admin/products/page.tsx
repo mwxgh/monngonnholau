@@ -2,7 +2,7 @@
 
 import { Fragment, useEffect, useState } from 'react'
 import { fetchAdmin } from '@/lib/fetch-admin'
-import { ChevronDown, ChevronRight, Pencil } from 'lucide-react'
+import { ChevronDown, ChevronRight, Pencil, Save } from 'lucide-react'
 import {
   Card,
   CardContent,
@@ -27,6 +27,10 @@ interface Variant {
   name: string
   price: string
   comparePrice: string | null
+  weight: number | null
+  length: number | null
+  width: number | null
+  height: number | null
   inventory: { quantity: number } | null
 }
 
@@ -75,13 +79,7 @@ export default function AdminProductsPage() {
   const [error, setError] = useState('')
   const [expanded, setExpanded] = useState<Set<number>>(new Set())
   const [filter, setFilter] = useState('')
-  const [editingProduct, setEditingProduct] = useState<AdminProduct | null>(
-    null
-  )
-  const [editingVariant, setEditingVariant] = useState<{
-    productId: number
-    variant: Variant
-  } | null>(null)
+  const [editingProductId, setEditingProductId] = useState<number | null>(null)
 
   useEffect(() => {
     fetchAdmin(`${API}/api/products/admin`)
@@ -202,17 +200,29 @@ export default function AdminProductsPage() {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="w-full table-fixed text-sm">
                 <thead>
                   <tr className="border-b text-xs text-muted-foreground">
-                    <th className="text-left pb-3 font-medium w-6" />
-                    <th className="text-left pb-3 font-medium">Sản phẩm</th>
-                    <th className="text-left pb-3 font-medium">Danh mục</th>
-                    <th className="text-center pb-3 font-medium">Biến thể</th>
-                    <th className="text-left pb-3 font-medium">Giá</th>
-                    <th className="text-center pb-3 font-medium">Tồn kho</th>
-                    <th className="text-center pb-3 font-medium">Trạng thái</th>
-                    <th className="text-center pb-3 font-medium">Hành động</th>
+                    <th className="w-6 text-left pb-3 font-medium" />
+                    <th className="w-[28%] text-left pb-3 font-medium">
+                      Sản phẩm
+                    </th>
+                    <th className="w-[14%] text-left pb-3 font-medium">
+                      Danh mục
+                    </th>
+                    <th className="w-[8%] text-center pb-3 font-medium">
+                      Biến thể
+                    </th>
+                    <th className="w-[16%] text-left pb-3 font-medium">Giá</th>
+                    <th className="w-[10%] text-center pb-3 font-medium">
+                      Tồn kho
+                    </th>
+                    <th className="w-[12%] text-center pb-3 font-medium">
+                      Trạng thái
+                    </th>
+                    <th className="w-[12%] text-center pb-3 font-medium">
+                      Hành động
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
@@ -237,12 +247,14 @@ export default function AdminProductsPage() {
                             )}
                           </td>
                           <td className="py-3">
-                            <p className="font-medium">{product.name}</p>
-                            <p className="text-xs text-muted-foreground font-mono">
+                            <p className="font-medium truncate">
+                              {product.name}
+                            </p>
+                            <p className="text-xs text-muted-foreground font-mono truncate">
                               {product.slug}
                             </p>
                           </td>
-                          <td className="py-3 text-sm text-muted-foreground">
+                          <td className="py-3 text-sm text-muted-foreground truncate">
                             {product.category?.name ?? '—'}
                           </td>
                           <td className="py-3 text-center text-sm">
@@ -278,7 +290,7 @@ export default function AdminProductsPage() {
                               size="icon-sm"
                               onClick={(e) => {
                                 e.stopPropagation()
-                                setEditingProduct(product)
+                                setEditingProductId(product.id)
                               }}
                             >
                               <Pencil className="w-3.5 h-3.5" />
@@ -291,13 +303,10 @@ export default function AdminProductsPage() {
                           product.variants.map((v) => (
                             <tr key={v.id} className="bg-muted/20 border-b">
                               <td />
-                              <td
-                                colSpan={1}
-                                className="py-2 pl-6 text-xs text-muted-foreground font-mono"
-                              >
+                              <td className="py-2 pl-6 text-xs text-muted-foreground font-mono truncate">
                                 {v.sku}
                               </td>
-                              <td className="py-2 text-xs text-muted-foreground">
+                              <td className="py-2 text-xs text-muted-foreground truncate">
                                 {v.name}
                               </td>
                               <td />
@@ -312,35 +321,14 @@ export default function AdminProductsPage() {
                                 )}
                               </td>
                               <td className="py-2 text-center">
-                                <span
-                                  className={cn(
-                                    'text-xs font-semibold',
-                                    (v.inventory?.quantity ?? 0) === 0
-                                      ? 'text-red-600'
-                                      : (v.inventory?.quantity ?? 0) <= 5
-                                        ? 'text-amber-600'
-                                        : 'text-emerald-600'
-                                  )}
-                                >
-                                  {v.inventory?.quantity ?? 0}
-                                </span>
+                                <VariantQuantityInput
+                                  productId={product.id}
+                                  variant={v}
+                                  onSaved={applyVariantUpdate}
+                                />
                               </td>
                               <td />
-                              <td className="py-2 text-center">
-                                <Button
-                                  variant="ghost"
-                                  size="icon-sm"
-                                  onClick={(e) => {
-                                    e.stopPropagation()
-                                    setEditingVariant({
-                                      productId: product.id,
-                                      variant: v
-                                    })
-                                  }}
-                                >
-                                  <Pencil className="w-3.5 h-3.5" />
-                                </Button>
-                              </td>
+                              <td />
                             </tr>
                           ))}
                       </Fragment>
@@ -364,23 +352,14 @@ export default function AdminProductsPage() {
       </Card>
 
       <ProductEditDialog
-        product={editingProduct}
+        product={products.find((p) => p.id === editingProductId) ?? null}
         categories={categories}
-        onClose={() => setEditingProduct(null)}
+        onClose={() => setEditingProductId(null)}
         onSaved={(updated) => {
           applyProductUpdate(updated)
-          setEditingProduct(null)
+          setEditingProductId(null)
         }}
-      />
-
-      <VariantEditDialog
-        entry={editingVariant}
-        onClose={() => setEditingVariant(null)}
-        onSaved={(updated) => {
-          if (editingVariant)
-            applyVariantUpdate(editingVariant.productId, updated)
-          setEditingVariant(null)
-        }}
+        onVariantSaved={applyVariantUpdate}
       />
     </div>
   )
@@ -390,12 +369,14 @@ function ProductEditDialog({
   product,
   categories,
   onClose,
-  onSaved
+  onSaved,
+  onVariantSaved
 }: {
   product: AdminProduct | null
   categories: Category[]
   onClose: () => void
   onSaved: (updated: AdminProduct) => void
+  onVariantSaved: (productId: number, updated: Variant) => void
 }) {
   const [name, setName] = useState('')
   const [description, setDescription] = useState('')
@@ -440,63 +421,111 @@ function ProductEditDialog({
 
   return (
     <Dialog open={!!product} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-4xl max-h-[88vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle>Sửa sản phẩm</DialogTitle>
         </DialogHeader>
 
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <Label>Tên sản phẩm</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} />
-          </div>
+        <div className="flex flex-col gap-6">
+          <div className="flex flex-col gap-4">
+            <h3 className="text-sm font-semibold text-foreground">
+              Thông tin chung
+            </h3>
 
-          <div className="flex flex-col gap-1.5">
-            <Label>Mô tả</Label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-              className="w-full rounded-lg border border-input bg-transparent px-2.5 py-1.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
             <div className="flex flex-col gap-1.5">
-              <Label>Danh mục</Label>
-              <select
-                value={categoryId}
-                onChange={(e) => setCategoryId(e.target.value)}
-                className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-              >
-                <option value="">—</option>
-                {categories.map((c) => (
-                  <option key={c.id} value={c.id}>
-                    {c.name}
-                  </option>
-                ))}
-              </select>
+              <Label>Tên sản phẩm</Label>
+              <Input value={name} onChange={(e) => setName(e.target.value)} />
             </div>
 
             <div className="flex flex-col gap-1.5">
-              <Label>Trạng thái</Label>
-              <select
-                value={status}
-                onChange={(e) => setStatus(e.target.value)}
-                className="h-8 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
-              >
-                {Object.entries(STATUS_META).map(([value, meta]) => (
-                  <option key={value} value={value}>
-                    {meta.label}
-                  </option>
-                ))}
-              </select>
+              <Label>Mô tả</Label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={3}
+                className="w-full rounded-lg border border-input bg-transparent px-2.5 py-1.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+              />
             </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div className="flex flex-col gap-1.5">
+                <Label>Danh mục</Label>
+                <select
+                  value={categoryId}
+                  onChange={(e) => setCategoryId(e.target.value)}
+                  className="h-9 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                >
+                  <option value="">—</option>
+                  {categories.map((c) => (
+                    <option key={c.id} value={c.id}>
+                      {c.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="flex flex-col gap-1.5">
+                <Label>Trạng thái</Label>
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className="h-9 rounded-lg border border-input bg-transparent px-2.5 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+                >
+                  {Object.entries(STATUS_META).map(([value, meta]) => (
+                    <option key={value} value={value}>
+                      {meta.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {error && <p className="text-sm text-red-500">{error}</p>}
           </div>
 
-          {error && <p className="text-sm text-red-500">{error}</p>}
+          {product && product.variants.length > 0 && (
+            <div className="flex flex-col gap-3 border-t pt-5">
+              <h3 className="text-sm font-semibold text-foreground">
+                Biến thể ({product.variants.length})
+              </h3>
+              <div className="overflow-x-auto rounded-lg border border-border">
+                <table className="w-full text-sm">
+                  <thead>
+                    <tr className="border-b bg-muted/30 text-muted-foreground">
+                      <th className="text-left py-2.5 px-3 font-medium w-32">
+                        SKU
+                      </th>
+                      <th className="text-left py-2.5 px-3 font-medium">
+                        Tên biến thể
+                      </th>
+                      <th className="text-left py-2.5 px-3 font-medium w-28">
+                        Giá bán
+                      </th>
+                      <th className="text-left py-2.5 px-3 font-medium w-28">
+                        Giá gốc
+                      </th>
+                      <th className="text-center py-2.5 px-3 font-medium w-20">
+                        Tồn kho
+                      </th>
+                      <th className="w-10" />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {product.variants.map((v) => (
+                      <VariantInlineEditor
+                        key={v.id}
+                        productId={product.id}
+                        variant={v}
+                        onSaved={onVariantSaved}
+                      />
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
 
-          <div className="flex justify-end gap-2 mt-2">
+          <div className="flex justify-end gap-2 border-t pt-5">
             <Button variant="outline" onClick={onClose} disabled={saving}>
               Hủy
             </Button>
@@ -510,52 +539,54 @@ function ProductEditDialog({
   )
 }
 
-function VariantEditDialog({
-  entry,
-  onClose,
+function VariantInlineEditor({
+  productId,
+  variant,
   onSaved
 }: {
-  entry: { productId: number; variant: Variant } | null
-  onClose: () => void
-  onSaved: (updated: Variant) => void
+  productId: number
+  variant: Variant
+  onSaved: (productId: number, updated: Variant) => void
 }) {
-  const [name, setName] = useState('')
-  const [price, setPrice] = useState('')
-  const [comparePrice, setComparePrice] = useState('')
-  const [quantity, setQuantity] = useState('')
+  const [sku, setSku] = useState(variant.sku)
+  const [name, setName] = useState(variant.name)
+  const [price, setPrice] = useState(variant.price)
+  const [comparePrice, setComparePrice] = useState(variant.comparePrice ?? '')
+  const [quantity, setQuantity] = useState(
+    String(variant.inventory?.quantity ?? 0)
+  )
+  const [weight, setWeight] = useState(variant.weight ?? '')
+  const [length, setLength] = useState(variant.length ?? '')
+  const [width, setWidth] = useState(variant.width ?? '')
+  const [height, setHeight] = useState(variant.height ?? '')
+  const [expanded, setExpanded] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState('')
 
-  useEffect(() => {
-    if (!entry) return
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setName(entry.variant.name)
-    setPrice(entry.variant.price)
-    setComparePrice(entry.variant.comparePrice ?? '')
-    setQuantity(String(entry.variant.inventory?.quantity ?? 0))
-    setError('')
-  }, [entry])
-
   async function handleSave() {
-    if (!entry) return
     setSaving(true)
     setError('')
     try {
       const res = await fetchAdmin(
-        `${API}/api/products/admin/variants/${entry.variant.id}`,
+        `${API}/api/products/admin/variants/${variant.id}`,
         {
           method: 'PATCH',
           body: JSON.stringify({
+            sku,
             name,
             price: Number(price),
             comparePrice: comparePrice ? Number(comparePrice) : undefined,
-            quantity: Number(quantity)
+            quantity: Number(quantity),
+            weight: weight !== '' ? Number(weight) : undefined,
+            length: length !== '' ? Number(length) : undefined,
+            width: width !== '' ? Number(width) : undefined,
+            height: height !== '' ? Number(height) : undefined
           })
         }
       )
       const data = await res.json()
       if (!res.ok) throw new Error(data?.message ?? `Lỗi ${res.status}`)
-      onSaved(data as Variant)
+      onSaved(productId, data as Variant)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Có lỗi xảy ra')
     } finally {
@@ -564,68 +595,205 @@ function VariantEditDialog({
   }
 
   return (
-    <Dialog open={!!entry} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
-          <DialogTitle>
-            Sửa biến thể{' '}
-            {entry && (
-              <span className="font-mono text-sm text-muted-foreground">
-                ({entry.variant.sku})
-              </span>
-            )}
-          </DialogTitle>
-        </DialogHeader>
-
-        <div className="flex flex-col gap-4">
-          <div className="flex flex-col gap-1.5">
-            <Label>Tên biến thể</Label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} />
-          </div>
-
-          <div className="grid grid-cols-2 gap-3">
-            <div className="flex flex-col gap-1.5">
-              <Label>Giá bán</Label>
-              <Input
-                type="number"
-                min={0}
-                value={price}
-                onChange={(e) => setPrice(e.target.value)}
-              />
-            </div>
-            <div className="flex flex-col gap-1.5">
-              <Label>Giá gốc</Label>
-              <Input
-                type="number"
-                min={0}
-                value={comparePrice}
-                onChange={(e) => setComparePrice(e.target.value)}
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-1.5">
-            <Label>Tồn kho</Label>
-            <Input
-              type="number"
-              min={0}
-              value={quantity}
-              onChange={(e) => setQuantity(e.target.value)}
-            />
-          </div>
-
-          {error && <p className="text-sm text-red-500">{error}</p>}
-
-          <div className="flex justify-end gap-2 mt-2">
-            <Button variant="outline" onClick={onClose} disabled={saving}>
-              Hủy
+    <>
+      <tr className="border-b border-border last:border-0">
+        <td className="p-2">
+          <Input
+            value={sku}
+            onChange={(e) => setSku(e.target.value)}
+            className="h-9 text-sm font-mono"
+          />
+        </td>
+        <td className="p-2">
+          <Input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="h-9 text-sm"
+          />
+        </td>
+        <td className="p-2">
+          <Input
+            type="number"
+            min={0}
+            value={price}
+            onChange={(e) => setPrice(e.target.value)}
+            className="h-9 text-sm"
+          />
+        </td>
+        <td className="p-2">
+          <Input
+            type="number"
+            min={0}
+            value={comparePrice}
+            onChange={(e) => setComparePrice(e.target.value)}
+            className="h-9 text-sm"
+          />
+        </td>
+        <td className="p-2">
+          <Input
+            type="number"
+            min={0}
+            value={quantity}
+            onChange={(e) => setQuantity(e.target.value)}
+            className="h-9 text-sm text-center"
+          />
+        </td>
+        <td className="p-2 text-center">
+          <div className="flex items-center justify-center gap-0.5">
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={() => setExpanded((v) => !v)}
+              title="Kích thước & khối lượng"
+            >
+              {expanded ? (
+                <ChevronDown className="w-4 h-4" />
+              ) : (
+                <ChevronRight className="w-4 h-4" />
+              )}
             </Button>
-            <Button onClick={handleSave} disabled={saving}>
-              {saving ? 'Đang lưu...' : 'Lưu'}
+            <Button
+              variant="ghost"
+              size="icon-sm"
+              onClick={handleSave}
+              disabled={saving}
+              title="Lưu biến thể"
+            >
+              {saving ? (
+                <span className="w-4 h-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+              ) : (
+                <Save className="w-4 h-4" />
+              )}
             </Button>
           </div>
-        </div>
-      </DialogContent>
-    </Dialog>
+        </td>
+      </tr>
+      {expanded && (
+        <tr className="border-b border-border last:border-0 bg-muted/20">
+          <td colSpan={6} className="p-2">
+            <div className="grid grid-cols-4 gap-3 px-1">
+              <div className="flex flex-col gap-1">
+                <Label className="text-xs text-muted-foreground">
+                  Khối lượng (g)
+                </Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={weight}
+                  onChange={(e) => setWeight(e.target.value)}
+                  className="h-9 text-sm"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label className="text-xs text-muted-foreground">
+                  Dài (cm)
+                </Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={length}
+                  onChange={(e) => setLength(e.target.value)}
+                  className="h-9 text-sm"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label className="text-xs text-muted-foreground">
+                  Rộng (cm)
+                </Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={width}
+                  onChange={(e) => setWidth(e.target.value)}
+                  className="h-9 text-sm"
+                />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label className="text-xs text-muted-foreground">
+                  Cao (cm)
+                </Label>
+                <Input
+                  type="number"
+                  min={0}
+                  value={height}
+                  onChange={(e) => setHeight(e.target.value)}
+                  className="h-9 text-sm"
+                />
+              </div>
+            </div>
+          </td>
+        </tr>
+      )}
+      {error && (
+        <tr className="border-b border-border last:border-0">
+          <td colSpan={6} className="px-3 pb-2 text-sm text-red-500">
+            {error}
+          </td>
+        </tr>
+      )}
+    </>
+  )
+}
+
+function VariantQuantityInput({
+  productId,
+  variant,
+  onSaved
+}: {
+  productId: number
+  variant: Variant
+  onSaved: (productId: number, updated: Variant) => void
+}) {
+  const savedQuantity = variant.inventory?.quantity ?? 0
+  const [value, setValue] = useState(String(savedQuantity))
+  const [saving, setSaving] = useState(false)
+
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setValue(String(savedQuantity))
+  }, [savedQuantity])
+
+  async function commit() {
+    const quantity = Math.max(0, Math.trunc(Number(value)) || 0)
+    if (quantity === savedQuantity) {
+      setValue(String(quantity))
+      return
+    }
+    setSaving(true)
+    try {
+      const res = await fetchAdmin(
+        `${API}/api/products/admin/variants/${variant.id}`,
+        { method: 'PATCH', body: JSON.stringify({ quantity }) }
+      )
+      const data = await res.json()
+      if (!res.ok) throw new Error(data?.message ?? `Lỗi ${res.status}`)
+      onSaved(productId, data as Variant)
+    } catch {
+      setValue(String(savedQuantity))
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  return (
+    <input
+      type="number"
+      min={0}
+      value={value}
+      disabled={saving}
+      onChange={(e) => setValue(e.target.value)}
+      onBlur={commit}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') (e.target as HTMLInputElement).blur()
+      }}
+      className={cn(
+        'w-16 rounded border border-input bg-transparent px-1.5 py-0.5 text-center text-xs font-semibold outline-none focus:ring-1 focus:ring-ring disabled:opacity-50',
+        savedQuantity === 0
+          ? 'text-red-600'
+          : savedQuantity <= 5
+            ? 'text-amber-600'
+            : 'text-emerald-600'
+      )}
+    />
   )
 }

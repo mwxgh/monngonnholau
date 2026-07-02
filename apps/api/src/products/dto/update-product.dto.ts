@@ -1,25 +1,23 @@
-import { IsArray, IsEnum, IsInt, IsOptional, IsString } from 'class-validator'
 import { ProductStatus } from '@prisma/client'
+import {
+  EnumFieldOptional,
+  NumberFieldOptional,
+  StringFieldOptional
+} from '@repo/nest-decorators'
 
 export class UpdateProductDto {
-  @IsOptional()
-  @IsString()
+  @StringFieldOptional()
   name?: string
 
-  @IsOptional()
-  @IsString()
+  @StringFieldOptional()
   description?: string
 
-  @IsOptional()
-  @IsInt()
+  @NumberFieldOptional({ int: true })
   categoryId?: number
 
-  @IsOptional()
-  @IsEnum(ProductStatus)
+  @EnumFieldOptional(() => ProductStatus)
   status?: ProductStatus
 
-  @IsOptional()
-  @IsArray()
-  @IsString({ each: true })
+  @StringFieldOptional({ each: true })
   images?: string[]
 }
