@@ -1,94 +1,95 @@
 # Món Ngon Nhớ Lâu
 
-Website bán hàng (bơ hạt, đồ ăn vặt handmade) — gồm storefront cho khách và trang quản trị cho admin/staff.
+E-commerce site (handmade nut butters, snacks) — a storefront for customers and an admin dashboard for admin/staff.
 
-## Kiến trúc
+## Architecture
 
-Turborepo monorepo, quản lý bằng pnpm workspaces.
+Turborepo monorepo, managed with pnpm workspaces.
 
 ```
 apps/
-  api/    NestJS + Prisma (PostgreSQL) — REST API, admin, thanh toán (PayOS), upload (S3-compatible)
-  web/    Next.js (App Router) + Tailwind CSS — storefront & trang admin
+  api/    NestJS + Prisma (PostgreSQL) — REST API, admin, payments (PayOS), upload (S3-compatible)
+  web/    Next.js (App Router) + Tailwind CSS — storefront & admin pages
 packages/
-  ui/                 Component React dùng chung
-  eslint-config/       Cấu hình ESLint dùng chung
-  typescript-config/   Cấu hình tsconfig dùng chung
-  nest-decorators/     Custom decorator cho NestJS (DTO validation, ...)
+  ui/                 Shared React components
+  eslint-config/       Shared ESLint config
+  typescript-config/   Shared tsconfig
+  nest-decorators/     Custom NestJS decorators (DTO validation, ...)
 ```
 
-**API** dùng Prisma v7 với `@prisma/adapter-pg` (driver adapter, không cấu hình `url` trực tiếp trong `schema.prisma` — xem `prisma.config.ts`). Thanh toán online qua PayOS, COD qua đơn vị vận chuyển SPX (có tính năng xuất Excel đơn hàng theo đúng format mẫu của SPX). Ảnh/file tĩnh lưu trên storage tương thích S3 (MinIO/RustFS).
+**API** uses Prisma v7 with `@prisma/adapter-pg` (driver adapter — no `url` configured directly in `schema.prisma`; see `prisma.config.ts`). Online payments via PayOS, COD via the SPX shipping carrier (with an Excel export feature matching SPX's required order format). Images/static files are stored on S3-compatible storage (MinIO/RustFS).
 
-**Web** là ứng dụng Next.js 16 (App Router), Tailwind v4, dùng `@base-ui/react` cho các component tương tác (dialog, sheet, ...).
+**Web** is a Next.js 16 app (App Router), Tailwind v4, using `@base-ui/react` for interactive components (dialog, sheet, ...).
 
-## Yêu cầu
+## Requirements
 
 - Node.js >= 18
 - pnpm 9
 - PostgreSQL
-- Storage tương thích S3 (MinIO, RustFS, ...) cho upload ảnh/file
+- S3-compatible storage (MinIO, RustFS, ...) for image/file uploads
 
-## Bắt đầu
+## Getting started
 
 ```sh
 pnpm install
 
-# copy env mẫu và điền giá trị thật
+# copy the example env files and fill in real values
 cp apps/api/.env.example apps/api/.env
 cp apps/web/.env.example apps/web/.env
 
-# đồng bộ schema vào DB (dev/staging — dùng db:migrate cho production)
+# sync the schema to the DB (dev/staging — use db:migrate for production)
 pnpm --filter api db:push
 pnpm --filter api db:generate
 
 pnpm dev
 ```
 
-- API mặc định chạy ở `http://localhost:4000`
-- Web mặc định chạy ở `http://localhost:3000`
+- API runs by default at `http://localhost:4000`
+- Web runs by default at `http://localhost:3000`
 
-## Lệnh thường dùng
+## Common commands
 
-| Lệnh                          | Mô tả                                        |
-| ----------------------------- | -------------------------------------------- |
-| `pnpm dev`                    | Chạy song song api + web ở chế độ dev        |
-| `pnpm build`                  | Build toàn bộ apps/packages                  |
-| `pnpm lint`                   | ESLint toàn bộ monorepo                      |
-| `pnpm check-types`            | Type-check toàn bộ monorepo (`tsc --noEmit`) |
-| `pnpm format`                 | Format code bằng Prettier                    |
-| `pnpm --filter api db:studio` | Mở Prisma Studio                             |
-| `pnpm --filter api db:push`   | Đồng bộ schema Prisma vào DB (dev/staging)   |
+| Command                       | Description                                  |
+| ----------------------------- | --------------------------------------------- |
+| `pnpm dev`                    | Run api + web in parallel in dev mode        |
+| `pnpm build`                  | Build all apps/packages                      |
+| `pnpm lint`                   | ESLint across the monorepo                   |
+| `pnpm check-types`            | Type-check the whole monorepo (`tsc --noEmit`) |
+| `pnpm format`                 | Format code with Prettier                    |
+| `pnpm --filter api db:studio` | Open Prisma Studio                           |
+| `pnpm --filter api db:push`   | Sync Prisma schema to the DB (dev/staging)   |
 
 ## Git convention
 
-Commit message theo [Conventional Commits](https://www.conventionalcommits.org/), được validate tự động bằng commitlint + Husky:
+Commit messages follow [Conventional Commits](https://www.conventionalcommits.org/), auto-validated with commitlint + Husky:
 
 ```
-<type>(<scope tuỳ chọn>): <mô tả>
+<type>(<optional scope>): <description>
 ```
 
-`type` hợp lệ: `feat`, `fix`, `chore`, `refactor`, `revert`, `docs`, `style`, `perf`, `test`, `ci`, `build`.
+Valid `type` values: `feat`, `fix`, `chore`, `refactor`, `revert`, `docs`, `style`, `perf`, `test`, `ci`, `build`.
 
-Ví dụ:
+Examples:
 
 ```
-feat: thêm export excel đơn hàng
-fix(orders): sửa lỗi tính tiền COD
+feat: add order excel export
+fix(orders): fix COD amount calculation
 ```
 
-Git hooks (qua Husky):
+Git hooks (via Husky):
 
-- `commit-msg` — validate message theo convention trên
-- `pre-push` — chạy `lint` + `check-types` toàn bộ monorepo, chặn push nếu có lỗi
+- `commit-msg` — validates the message against the convention above
+- `pre-push` — runs `lint` + `check-types` across the whole monorepo, blocks the push on error
 
 ## CI/CD
 
-GitHub Actions (`.github/workflows/deploy.yml`) khi push lên `master`:
+GitHub Actions (`.github/workflows/deploy.yml`) on push to `master`:
 
-1. **validate** — cài dependencies, generate Prisma client, chạy `lint` + `check-types`
-2. **build-push** — build Docker image cho `api` và `web`, push lên GHCR
-3. **deploy** — SSH vào VPS, `git pull` + `docker compose up -d` để triển khai bản mới
+1. **build-push** — builds Docker images for `api` and `web`, pushes to GHCR
+2. **deploy** — SSHes into the VPS, `git pull` + `docker compose up -d` to roll out the new version
 
-## Deploy thủ công
+Lint/type-check only run in the `pre-push` hook (local); they are not repeated in CI to keep the pipeline fast.
 
-Xem `apps/api/Dockerfile`, `apps/web/Dockerfile` và `docker-compose.yml` ở VPS.
+## Manual deploy
+
+See `apps/api/Dockerfile`, `apps/web/Dockerfile`, and `docker-compose.yml` on the VPS.
