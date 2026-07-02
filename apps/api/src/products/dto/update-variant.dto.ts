@@ -10,6 +10,9 @@ export class UpdateVariantDto {
   @NumberFieldOptional({ min: 0 })
   price?: number
 
+  @StringFieldOptional()
+  thumbnail?: string
+
   @NumberFieldOptional({ min: 0 })
   comparePrice?: number
 

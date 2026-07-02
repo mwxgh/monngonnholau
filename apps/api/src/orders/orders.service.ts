@@ -1,7 +1,9 @@
 import { createHmac } from 'crypto'
+import { join } from 'path'
 import { BadRequestException, Injectable, Logger } from '@nestjs/common'
 import { ConfigService } from '@nestjs/config'
 import { PayOS } from '@payos/node'
+import ExcelJS from 'exceljs'
 import {
   OrderStatus,
   PaymentMethod,
@@ -12,12 +14,121 @@ import { PrismaService } from '../prisma/prisma.service'
 import { MailService } from '../mail/mail.service'
 import { CreateQuickOrderDto } from './dto/create-quick-order.dto'
 
+/**
+ * Arranges `qty` boxes of the same size (l x w x h) into an nx x ny x nz
+ * grid that's as close to a cube as possible, instead of stacking them in
+ * a single line. E.g. 4 boxes of 10x10x10 -> nx=2, ny=2, nz=1 -> 20x20x10
+ * (not 40x10x10).
+ */
+function packDimensions(
+  length: number,
+  width: number,
+  height: number,
+  qty: number
+) {
+  if (qty <= 1) return { length, width, height }
+  const nx = Math.ceil(Math.cbrt(qty))
+  const ny = Math.ceil(Math.sqrt(qty / nx))
+  const nz = Math.ceil(qty / (nx * ny))
+  return { length: length * nx, width: width * ny, height: height * nz }
+}
+
+// The 63 provinces spelled exactly as SPX's address directory expects
+// (State_list sheet in the bulk order import template)
+const SPX_PROVINCES = [
+  'AN GIANG',
+  'BÀ RỊA - VŨNG TÀU',
+  'BẮC GIANG',
+  'BẮC KẠN',
+  'BẠC LIÊU',
+  'BẮC NINH',
+  'BẾN TRE',
+  'BÌNH ĐỊNH',
+  'BÌNH DƯƠNG',
+  'BÌNH PHƯỚC',
+  'BÌNH THUẬN',
+  'CÀ MAU',
+  'CẦN THƠ',
+  'CAO BẰNG',
+  'ĐÀ NẴNG',
+  'ĐẮK LẮK',
+  'ĐẮK NÔNG',
+  'ĐIỆN BIÊN',
+  'ĐỒNG NAI',
+  'ĐỒNG THÁP',
+  'GIA LAI',
+  'HÀ GIANG',
+  'HÀ NAM',
+  'HÀ NỘI',
+  'HÀ TĨNH',
+  'HẢI DƯƠNG',
+  'HẢI PHÒNG',
+  'HẬU GIANG',
+  'HÒA BÌNH',
+  'HƯNG YÊN',
+  'KHÁNH HÒA',
+  'KIÊN GIANG',
+  'KON TUM',
+  'LAI CHÂU',
+  'LÂM ĐỒNG',
+  'LẠNG SƠN',
+  'LÀO CAI',
+  'LONG AN',
+  'NAM ĐỊNH',
+  'NGHỆ AN',
+  'NINH BÌNH',
+  'NINH THUẬN',
+  'PHÚ THỌ',
+  'PHÚ YÊN',
+  'QUẢNG BÌNH',
+  'QUẢNG NAM',
+  'QUẢNG NGÃI',
+  'QUẢNG NINH',
+  'QUẢNG TRỊ',
+  'SÓC TRĂNG',
+  'SƠN LA',
+  'TÂY NINH',
+  'THÁI BÌNH',
+  'THÁI NGUYÊN',
+  'THANH HÓA',
+  'THỪA THIÊN HUẾ',
+  'TIỀN GIANG',
+  'TP. HỒ CHÍ MINH',
+  'TRÀ VINH',
+  'TUYÊN QUANG',
+  'VĨNH LONG',
+  'VĨNH PHÚC',
+  'YÊN BÁI'
+]
+
+/**
+ * Normalizes a province name to the exact spelling SPX expects (uppercase,
+ * strip the "Tỉnh"/"Thành phố"/"TP." prefix — except "TP. Hồ Chí Minh",
+ * which keeps its "TP." prefix).
+ * "Thành phố Hà Nội" -> "HÀ NỘI", "Tp Hồ Chí Minh" -> "TP. HỒ CHÍ MINH"
+ */
+function normalizeProvince(name: string): string {
+  const stripped = name
+    .replace(/^(tỉnh|thành phố|tp\.?)\s+/i, '')
+    .trim()
+    .toUpperCase()
+  const match = SPX_PROVINCES.find(
+    (p) => p.replace(/^TP\.\s*/, '') === stripped
+  )
+  return match ?? stripped
+}
+
 @Injectable()
 export class OrdersService {
   private readonly logger = new Logger(OrdersService.name)
   private readonly payos: PayOS | null = null
   private readonly checksumKey: string | null = null
   private readonly clientUrl: string
+  private readonly orderTemplatePath = join(
+    __dirname,
+    'assets',
+    'order-template.xlsx'
+  )
 
   constructor(
     private readonly prisma: PrismaService,
@@ -73,11 +184,25 @@ export class OrdersService {
     }
 
     let subtotal = 0
+    let weight = 0
+    let length = 0
+    let width = 0
+    let height = 0
     const orderItems = dto.items.map((item) => {
       const v = variants.find((v) => v.sku === item.sku)!
       const price = Number(v.price)
       const total = price * item.qty
       subtotal += total
+      weight += (v.weight ?? 0) * item.qty
+      const packed = packDimensions(
+        v.length ?? 0,
+        v.width ?? 0,
+        v.height ?? 0,
+        item.qty
+      )
+      length = Math.max(length, packed.length)
+      width = Math.max(width, packed.width)
+      height += packed.height
       return {
         variantId: v.id,
         name: `${v.product.name} — ${v.name}`,
@@ -127,6 +252,10 @@ export class OrdersService {
         shippingFee,
         discount: 0,
         total,
+        weight,
+        length,
+        width,
+        height,
         items: { create: orderItems }
       }
     })
@@ -279,6 +408,134 @@ export class OrdersService {
       paymentStatus: o.payment?.status ?? null,
       createdAt: o.createdAt
     }))
+  }
+
+  async exportOrdersExcel(status?: string): Promise<ExcelJS.Buffer> {
+    const orders = await this.prisma.order.findMany({
+      where: status ? { status: status as OrderStatus } : undefined,
+      orderBy: { createdAt: 'desc' },
+      include: {
+        address: true,
+        items: { orderBy: { id: 'asc' } }
+      }
+    })
+
+    // Load SPX's original template file as-is (keeps the rich-text headers,
+    // data validation dropdowns, and the State/City/District_list reference
+    // sheets) and only fill data into the "Tạo đơn" sheet — so the exported
+    // file matches the template exactly, maximizing the odds that uploading
+    // it to SPX successfully creates the orders.
+    const workbook = new ExcelJS.Workbook()
+    await workbook.xlsx.readFile(this.orderTemplatePath)
+    const sheet = workbook.getWorksheet('Tạo đơn')
+    if (!sheet) {
+      throw new Error('Template is missing the "Tạo đơn" sheet')
+    }
+
+    let rowIndex = 2
+    for (const order of orders) {
+      const isCod = order.paymentMethod === PaymentMethod.COD
+      const weightKg = order.weight ? order.weight / 1000 : null
+      const address = order.address
+      const firstItem = order.items[0]
+
+      // 1 order = 1 row. Product name is taken from the first item; we
+      // don't split variants into separate rows (Quantity/Price aren't
+      // required since "Giao hàng một phần" (partial delivery) is always N).
+      // Write cell by cell (not row.values) so we don't touch the hidden
+      // formula cells in columns AC/AD (29/30) the template uses for
+      // validation.
+      const row = sheet.getRow(rowIndex)
+      const values = [
+        order.id,
+        address.fullName,
+        address.phone,
+        normalizeProvince(address.oldProvince ?? address.province ?? ''),
+        (address.oldDistrict ?? '').toUpperCase(),
+        address.oldWard ?? address.ward ?? '',
+        address.street ?? address.detail,
+        null,
+        null,
+        firstItem.name,
+        firstItem.quantity,
+        Number(firstItem.price),
+        weightKg,
+        order.length,
+        order.width,
+        order.height,
+        order.userId,
+        Number(order.subtotal),
+        'N',
+        'N',
+        'N',
+        'N',
+        null,
+        isCod ? 'Y' : 'N',
+        isCod ? Number(order.subtotal) : null,
+        'N',
+        isCod ? 'Người nhận trả' : 'Người gửi trả',
+        order.note
+      ]
+      values.forEach((value, i) => {
+        row.getCell(i + 1).value = value
+      })
+      rowIndex++
+    }
+
+    const buffer = await workbook.xlsx.writeBuffer()
+
+    if (orders.length > 0) {
+      await this.prisma.order.updateMany({
+        where: { id: { in: orders.map((o) => o.id) } },
+        data: { status: OrderStatus.PROCESSED }
+      })
+    }
+
+    return buffer
+  }
+
+  async findOneAdmin(id: number) {
+    const order = await this.prisma.order.findUnique({
+      where: { id },
+      include: {
+        address: true,
+        items: { orderBy: { id: 'asc' } },
+        payment: { select: { status: true } }
+      }
+    })
+    if (!order) throw new BadRequestException('Đơn hàng không tồn tại')
+
+    return {
+      id: order.id,
+      status: order.status,
+      paymentMethod: order.paymentMethod,
+      paymentStatus: order.payment?.status ?? null,
+      note: order.note,
+      trackingCode: order.trackingCode,
+      subtotal: Number(order.subtotal),
+      shippingFee: Number(order.shippingFee),
+      discount: Number(order.discount),
+      total: Number(order.total),
+      weight: order.weight,
+      length: order.length,
+      width: order.width,
+      height: order.height,
+      createdAt: order.createdAt,
+      address: {
+        fullName: order.address.fullName,
+        phone: order.address.phone,
+        email: order.address.email,
+        detail: order.address.detail
+      },
+      items: order.items.map((i) => ({
+        id: i.id,
+        name: i.name,
+        sku: i.sku,
+        price: Number(i.price),
+        quantity: i.quantity,
+        total: Number(i.total)
+      }))
+    }
   }
 
   async updateOrderStatus(orderId: number, status: string) {

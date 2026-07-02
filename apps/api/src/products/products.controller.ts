@@ -1,15 +1,18 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   Param,
   ParseIntPipe,
-  Patch
+  Patch,
+  Post
 } from '@nestjs/common'
 import { Role } from '@prisma/client'
 import { ProductsService } from './products.service'
 import { Public } from '../auth/decorators/public.decorator'
 import { Roles } from '../auth/decorators/roles.decorator'
+import { CreateProductDto } from './dto/create-product.dto'
 import { UpdateProductDto } from './dto/update-product.dto'
 import { UpdateVariantDto } from './dto/update-variant.dto'
 
@@ -30,6 +33,12 @@ export class ProductsController {
   }
 
   @Roles(Role.ADMIN, Role.STAFF)
+  @Post('admin')
+  createProduct(@Body() dto: CreateProductDto) {
+    return this.productsService.createProduct(dto)
+  }
+
+  @Roles(Role.ADMIN, Role.STAFF)
   @Patch('admin/variants/:id')
   updateVariant(
     @Param('id', ParseIntPipe) id: number,
@@ -45,5 +54,11 @@ export class ProductsController {
     @Body() dto: UpdateProductDto
   ) {
     return this.productsService.updateProduct(id, dto)
+  }
+
+  @Roles(Role.ADMIN, Role.STAFF)
+  @Delete('admin/:id')
+  deleteProduct(@Param('id', ParseIntPipe) id: number) {
+    return this.productsService.deleteProduct(id)
   }
 }

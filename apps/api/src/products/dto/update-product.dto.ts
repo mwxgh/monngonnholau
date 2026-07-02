@@ -1,23 +1,15 @@
-import { ProductStatus } from '@prisma/client'
-import {
-  EnumFieldOptional,
-  NumberFieldOptional,
-  StringFieldOptional
-} from '@repo/nest-decorators'
+import { OmitType, PartialType } from '@nestjs/swagger'
+import { ClassFieldOptional, NumberFieldOptional } from '@repo/nest-decorators'
+import { CreateProductDto, CreateVariantDto } from './create-product.dto'
 
-export class UpdateProductDto {
-  @StringFieldOptional()
-  name?: string
-
-  @StringFieldOptional()
-  description?: string
-
+export class SyncVariantDto extends CreateVariantDto {
   @NumberFieldOptional({ int: true })
-  categoryId?: number
+  id?: number
+}
 
-  @EnumFieldOptional(() => ProductStatus)
-  status?: ProductStatus
-
-  @StringFieldOptional({ each: true })
-  images?: string[]
+export class UpdateProductDto extends PartialType(
+  OmitType(CreateProductDto, ['variants'] as const)
+) {
+  @ClassFieldOptional(() => SyncVariantDto, { each: true, minSize: 1 })
+  variants?: SyncVariantDto[]
 }

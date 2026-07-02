@@ -6,7 +6,9 @@ import {
   Param,
   ParseIntPipe,
   Patch,
-  Post
+  Post,
+  Query,
+  StreamableFile
 } from '@nestjs/common'
 import { Role } from '@prisma/client'
 import { OrdersService } from './orders.service'
@@ -34,6 +36,22 @@ export class OrdersController {
   @Get('admin')
   findAllAdmin() {
     return this.ordersService.findAllAdmin()
+  }
+
+  @Roles(Role.ADMIN, Role.STAFF)
+  @Get('admin/export')
+  async exportOrders(@Query('status') status?: string) {
+    const buffer = await this.ordersService.exportOrdersExcel(status)
+    return new StreamableFile(new Uint8Array(buffer), {
+      type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+      disposition: `attachment; filename="don-hang-${Date.now()}.xlsx"`
+    })
+  }
+
+  @Roles(Role.ADMIN, Role.STAFF)
+  @Get('admin/:id')
+  findOneAdmin(@Param('id', ParseIntPipe) id: number) {
+    return this.ordersService.findOneAdmin(id)
   }
 
   @Roles(Role.ADMIN, Role.STAFF)
