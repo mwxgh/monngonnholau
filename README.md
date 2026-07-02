@@ -49,15 +49,15 @@ pnpm dev
 
 ## Common commands
 
-| Command                       | Description                                  |
-| ----------------------------- | --------------------------------------------- |
-| `pnpm dev`                    | Run api + web in parallel in dev mode        |
-| `pnpm build`                  | Build all apps/packages                      |
-| `pnpm lint`                   | ESLint across the monorepo                   |
+| Command                       | Description                                    |
+| ----------------------------- | ---------------------------------------------- |
+| `pnpm dev`                    | Run api + web in parallel in dev mode          |
+| `pnpm build`                  | Build all apps/packages                        |
+| `pnpm lint`                   | ESLint across the monorepo                     |
 | `pnpm check-types`            | Type-check the whole monorepo (`tsc --noEmit`) |
-| `pnpm format`                 | Format code with Prettier                    |
-| `pnpm --filter api db:studio` | Open Prisma Studio                           |
-| `pnpm --filter api db:push`   | Sync Prisma schema to the DB (dev/staging)   |
+| `pnpm format`                 | Format code with Prettier                      |
+| `pnpm --filter api db:studio` | Open Prisma Studio                             |
+| `pnpm --filter api db:push`   | Sync Prisma schema to the DB (dev/staging)     |
 
 ## Git convention
 
@@ -79,7 +79,7 @@ fix(orders): fix COD amount calculation
 Git hooks (via Husky):
 
 - `commit-msg` — validates the message against the convention above
-- `pre-push` — runs `lint` + `check-types` across the whole monorepo, blocks the push on error
+- `pre-push` — runs `format` + `lint` + `check-types` across the whole monorepo, blocks the push on error
 
 ## CI/CD
 
