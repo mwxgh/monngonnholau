@@ -14,7 +14,8 @@ import {
   X,
   LogOut,
   ChevronLeft,
-  Bell
+  Bell,
+  Mail
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { cn } from '@/lib/utils'
@@ -24,6 +25,7 @@ const navItems = [
   { href: '/admin/orders', label: 'Đơn hàng', icon: ShoppingCart },
   { href: '/admin/products', label: 'Sản phẩm', icon: Package },
   { href: '/admin/users', label: 'Khách hàng', icon: Users },
+  { href: '/admin/newsletter', label: 'Bản tin', icon: Mail },
   { href: '/admin/analytics', label: 'Phân tích', icon: BarChart3 },
   { href: '/admin/settings', label: 'Cài đặt', icon: Settings }
 ]

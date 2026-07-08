@@ -1,75 +1,44 @@
-import { staticUrl } from '@/lib/utils'
-import Image from 'next/image'
-import Link from 'next/link'
-import { ChevronRight } from 'lucide-react'
+import { ProductGrid } from './product-grid'
 
-const featuresData = [
-  {
-    imgSrc: staticUrl('images/featureOne.svg'),
-    heading: 'Đa dạng thực đơn',
-    subheading: 'Bơ lạc, hạt điều, khô sấy, mắm tép — đầy đủ khẩu vị'
-  },
-  {
-    imgSrc: staticUrl('images/featureTwo.svg'),
-    heading: 'Nguyên liệu sạch',
-    subheading: '100% tự nhiên, không chất bảo quản, không phụ gia'
-  },
-  {
-    imgSrc: staticUrl('images/featureThree.svg'),
-    heading: 'Mẹ tự tay làm',
-    subheading: 'Từng mẻ nhỏ được chăm chút như nấu cho gia đình'
-  },
-  {
-    imgSrc: staticUrl('images/featureFour.svg'),
-    heading: 'Giao hàng nhanh',
-    subheading: 'Đóng gói cẩn thận, giao tận tay toàn quốc 1–2 ngày'
-  }
-]
+interface ProductVariant {
+  id: number
+  sku: string
+  price: string
+  thumbnail: string | null
+}
 
-export function FeaturedProducts() {
+interface Product {
+  id: number
+  slug: string
+  name: string
+  images: string[]
+  variants: ProductVariant[]
+}
+
+async function getProducts(): Promise<Product[]> {
+  const res = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/api/products`, {
+    next: { revalidate: 60 }
+  })
+  if (!res.ok) return []
+  return res.json()
+}
+
+export async function FeaturedProducts() {
+  const products = (await getProducts()).slice(0, 4)
+
   return (
-    <section id="about-section">
+    <section id="product-section">
       <div className="container mx-auto max-w-7xl px-4">
-        <div className="text-center mb-14">
+        <div className="text-center">
           <p className="text-primary text-lg font-normal mb-3 tracking-widest uppercase">
-            Đặc điểm nổi bật
+            Sản phẩm nổi bật
           </p>
-          <h2 className="text-3xl lg:text-5xl font-semibold text-black max-w-lg mx-auto">
-            Nhiều điều thú vị đang chờ bạn.
+          <h2 className="text-3xl lg:text-5xl font-semibold text-black">
+            Những món ăn do chúng tôi chế biến.
           </h2>
         </div>
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-y-20 gap-x-5 mt-32">
-          {featuresData.map((item, i) => (
-            <div
-              key={i}
-              className="p-8 relative rounded-3xl bg-linear-to-b from-black/5 to-white"
-            >
-              <div className="rounded-full flex justify-center absolute top-[-45%] left-0 w-full">
-                <Image
-                  src={item.imgSrc}
-                  alt={item.heading}
-                  width={200}
-                  height={200}
-                  style={{ width: 'auto', height: 'auto' }}
-                />
-              </div>
-              <h3 className="text-2xl text-black font-semibold text-center mt-16">
-                {item.heading}
-              </h3>
-              <p className="text-lg font-normal text-black/50 text-center mt-2">
-                {item.subheading}
-              </p>
-              <div className="flex items-center justify-center">
-                <Link
-                  href="#cook-section"
-                  className="text-center text-lg font-medium text-primary mt-2 flex items-center gap-1 hover:underline"
-                >
-                  Tìm hiểu thêm
-                  <ChevronRight className="w-5 h-5" />
-                </Link>
-              </div>
-            </div>
-          ))}
+        <div className="my-16 px-6">
+          <ProductGrid products={products} />
         </div>
       </div>
     </section>

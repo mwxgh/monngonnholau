@@ -4,9 +4,9 @@ import Link from 'next/link'
 
 import { Button } from '@/components/ui/button'
 
-export function HowItWorks() {
+export function About() {
   return (
-    <section className="relative" id="cook-section">
+    <section className="relative" id="about-section">
       <div className="container mx-auto max-w-7xl px-4">
         <div className="absolute right-0 bottom-[-18%] hidden lg:block">
           <Image
@@ -28,7 +28,7 @@ export function HowItWorks() {
           </div>
           <div className="col-span-6 flex flex-col justify-center">
             <p className="text-primary text-lg font-normal mb-3 tracking-widest uppercase text-start">
-              nấu cùng chúng tôi
+              về chúng tôi
             </p>
             <h2 className="text-3xl lg:text-5xl font-semibold text-black text-start">
               Nấu ngon cùng những người thợ lành nghề.

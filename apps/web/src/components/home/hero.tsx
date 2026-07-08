@@ -28,7 +28,7 @@ export function Hero() {
             như nấu cho chính gia đình bạn.
           </p>
           <div className="flex flex-wrap gap-4">
-            <Button size="pill" render={<Link href="#cook-section" />}>
+            <Button size="pill" render={<Link href="#product-section" />}>
               Khám phá ngay
             </Button>
             <Button

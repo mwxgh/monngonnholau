@@ -53,6 +53,48 @@ export class MailService {
 
     if (error) this.logger.error(`sendOrderShipping failed: ${error.message}`)
   }
+
+  async sendNewsletterWelcome(params: { to: string }) {
+    const { error } = await this.resend.emails.send({
+      from: this.from,
+      to: params.to,
+      subject: 'Cảm ơn bạn đã đăng ký nhận bản tin',
+      html: buildNewsletterWelcomeHtml()
+    })
+
+    if (error)
+      this.logger.error(`sendNewsletterWelcome failed: ${error.message}`)
+  }
+
+  async sendNewsletterBroadcast(params: {
+    recipients: string[]
+    subject: string
+    content: string
+  }) {
+    const html = buildNewsletterBroadcastHtml(params.content)
+    const batches = chunk(params.recipients, 100)
+
+    for (const batch of batches) {
+      const { error } = await this.resend.batch.send(
+        batch.map((to) => ({
+          from: this.from,
+          to,
+          subject: params.subject,
+          html
+        }))
+      )
+      if (error)
+        this.logger.error(`sendNewsletterBroadcast failed: ${error.message}`)
+    }
+  }
+}
+
+function chunk<T>(items: T[], size: number): T[][] {
+  const result: T[][] = []
+  for (let i = 0; i < items.length; i += size) {
+    result.push(items.slice(i, i + size))
+  }
+  return result
 }
 
 const styles = `
@@ -106,6 +148,40 @@ function buildOrderCreatedHtml(p: {
     <div class="row"><p class="total">Tổng cộng</p><p class="total">${vnd(p.total)}</p></div>
     <h2>Địa chỉ giao hàng</h2>
     <p>${p.address}</p>
+    <hr>
+    <p class="footer">Món Ngon Nhớ Lâu — monngonnholau.online</p>
+  </div></body></html>`
+}
+
+function buildNewsletterWelcomeHtml() {
+  return `<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><style>${styles}</style></head>
+  <body><div class="container">
+    <h1>Chào mừng bạn!</h1>
+    <p>Cảm ơn bạn đã đăng ký nhận bản tin từ Món Ngon Nhớ Lâu.</p>
+    <p>Chúng tôi sẽ gửi đến bạn những món ngon và ưu đãi mới nhất.</p>
+    <hr>
+    <p class="footer">Món Ngon Nhớ Lâu — monngonnholau.online</p>
+  </div></body></html>`
+}
+
+function escapeHtml(s: string) {
+  return s
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;')
+}
+
+function buildNewsletterBroadcastHtml(content: string) {
+  const paragraphs = content
+    .split(/\n{2,}/)
+    .map((p) => `<p>${escapeHtml(p).replace(/\n/g, '<br>')}</p>`)
+    .join('')
+
+  return `<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><style>${styles}</style></head>
+  <body><div class="container">
+    ${paragraphs}
     <hr>
     <p class="footer">Món Ngon Nhớ Lâu — monngonnholau.online</p>
   </div></body></html>`

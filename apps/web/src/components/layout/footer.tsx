@@ -5,7 +5,7 @@ import Image from 'next/image'
 const navLinks = [
   { href: '#home-section', label: 'Trang chủ' },
   { href: '#about-section', label: 'Về chúng tôi' },
-  { href: '#cook-section', label: 'Công thức' },
+  { href: '#product-section', label: 'Công thức' },
   { href: '#gallery-section', label: 'Thư viện' }
 ]
 

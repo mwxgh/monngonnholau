@@ -9,6 +9,7 @@ import { DashboardModule } from './dashboard/dashboard.module.js'
 import { CategoriesModule } from './categories/categories.module.js'
 import { InventoryModule } from './inventory/inventory.module.js'
 import { MailModule } from './mail/mail.module.js'
+import { NewsletterModule } from './newsletter/newsletter.module.js'
 import { NotificationsModule } from './notifications/notifications.module.js'
 import { OrdersModule } from './orders/orders.module.js'
 import { PaymentModule } from './payment/payment.module.js'
@@ -36,6 +37,7 @@ import { WishlistModule } from './wishlist/wishlist.module.js'
     NotificationsModule,
     UploadModule,
     MailModule,
+    NewsletterModule,
     DashboardModule
   ],
   providers: [

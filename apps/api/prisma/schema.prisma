@@ -324,6 +324,14 @@ model Setting {
   @@map("settings")
 }
 
+model NewsletterSubscriber {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("newsletter_subscribers")
+}
+
 // ==================== WISHLIST & CART ====================
 
 model Wishlist {
