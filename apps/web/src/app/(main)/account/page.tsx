@@ -13,7 +13,8 @@ import {
   Pencil,
   Trash2,
   Star,
-  Check
+  Check,
+  Package
 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
@@ -78,6 +79,45 @@ interface UserProfile {
   addresses: Address[]
 }
 
+interface OrderSummary {
+  id: number
+  items: string[]
+  total: number
+  status: string
+  paymentMethod: string
+  paymentStatus: string | null
+  trackingCode: string | null
+  createdAt: string
+}
+
+interface OrderDetail {
+  id: number
+  status: string
+  paymentMethod: string
+  paymentStatus: string | null
+  note: string | null
+  trackingCode: string | null
+  subtotal: number
+  shippingFee: number
+  discount: number
+  total: number
+  createdAt: string
+  address: {
+    fullName: string
+    phone: string
+    email: string | null
+    detail: string
+  }
+  items: {
+    id: number
+    name: string
+    sku: string
+    price: number
+    quantity: number
+    total: number
+  }[]
+}
+
 // ── Schemas ──────────────────────────────────────────────────────
 
 const profileSchema = z.object({
@@ -120,7 +160,7 @@ type ProfileValues = z.infer<typeof profileSchema>
 type PasswordValues = z.infer<typeof passwordSchema>
 type AddressValues = z.infer<typeof addressSchema>
 
-type Tab = 'profile' | 'password' | 'addresses'
+type Tab = 'profile' | 'orders' | 'password' | 'addresses'
 
 const tabs: {
   id: Tab
@@ -128,9 +168,60 @@ const tabs: {
   icon: React.FC<{ className?: string }>
 }[] = [
   { id: 'profile', label: 'Thông tin cá nhân', icon: User },
+  { id: 'orders', label: 'Đơn hàng', icon: Package },
   { id: 'password', label: 'Đổi mật khẩu', icon: Lock },
   { id: 'addresses', label: 'Địa chỉ giao hàng', icon: MapPin }
 ]
+
+function formatVND(n: number) {
+  return '₫' + n.toLocaleString('vi-VN')
+}
+
+function formatDate(s: string) {
+  return new Date(s).toLocaleDateString('vi-VN', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  })
+}
+
+const ORDER_STATUS_META: Record<string, { label: string; className: string }> =
+  {
+    PENDING_PAYMENT: {
+      label: 'Chờ thanh toán',
+      className: 'text-amber-700 bg-amber-50 border border-amber-200'
+    },
+    PAID: {
+      label: 'Đã thanh toán',
+      className: 'text-sky-700 bg-sky-50 border border-sky-200'
+    },
+    PROCESSING: {
+      label: 'Chờ xử lý',
+      className: 'text-violet-700 bg-violet-50 border border-violet-200'
+    },
+    PROCESSED: {
+      label: 'Đã xử lý',
+      className: 'text-cyan-700 bg-cyan-50 border border-cyan-200'
+    },
+    SHIPPING: {
+      label: 'Đang giao',
+      className: 'text-blue-700 bg-blue-50 border border-blue-200'
+    },
+    DELIVERED: {
+      label: 'Đã giao',
+      className: 'text-emerald-700 bg-emerald-50 border border-emerald-200'
+    },
+    CANCELLED: {
+      label: 'Đã hủy',
+      className: 'text-red-700 bg-red-50 border border-red-200'
+    },
+    REFUNDED: {
+      label: 'Hoàn tiền',
+      className: 'text-gray-700 bg-gray-50 border border-gray-200'
+    }
+  }
 
 // ── AddressSelect ────────────────────────────────────────────────
 
@@ -282,6 +373,7 @@ export default function AccountPage() {
                 onSaved={(updated) => setUser({ ...user, ...updated })}
               />
             )}
+            {tab === 'orders' && <OrdersTab />}
             {tab === 'password' && <PasswordTab />}
             {tab === 'addresses' && (
               <AddressesTab
@@ -1173,6 +1265,220 @@ function AddressDialog({
             </div>
           </form>
         </Form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+
+// ── Orders tab ───────────────────────────────────────────────────
+
+function OrdersTab() {
+  const [orders, setOrders] = useState<OrderSummary[]>([])
+  const [loading, setLoading] = useState(true)
+  const [detailId, setDetailId] = useState<number | null>(null)
+
+  useEffect(() => {
+    fetchAdmin(`${API}/api/orders/me`)
+      .then((r) => r.json())
+      .then((data: OrderSummary[]) => setOrders(data))
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [])
+
+  return (
+    <div className="bg-white rounded-xl border border-gray-100 p-6">
+      <h2 className="text-base font-semibold text-neutral-800 mb-6">
+        Đơn hàng của tôi
+      </h2>
+
+      {loading ? (
+        <div className="flex justify-center py-12">
+          <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+        </div>
+      ) : orders.length === 0 ? (
+        <div className="text-center py-12 text-neutral-400">
+          <Package className="w-10 h-10 mx-auto mb-3 opacity-40" />
+          <p className="text-sm">Chưa có đơn hàng nào</p>
+        </div>
+      ) : (
+        <div className="flex flex-col gap-3">
+          {orders.map((order) => {
+            const meta = ORDER_STATUS_META[order.status] ?? {
+              label: order.status,
+              className: 'text-gray-700 bg-gray-50 border border-gray-200'
+            }
+            return (
+              <div
+                key={order.id}
+                className="rounded-lg border border-gray-100 p-4"
+              >
+                <div className="flex items-start justify-between gap-2 flex-wrap">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium text-sm text-neutral-800">
+                        Đơn #{order.id}
+                      </span>
+                      <span
+                        className={`text-xs font-medium px-2 py-0.5 rounded-full ${meta.className}`}
+                      >
+                        {meta.label}
+                      </span>
+                    </div>
+                    <p className="mt-1 text-xs text-neutral-400">
+                      {formatDate(order.createdAt)}
+                    </p>
+                    <p className="mt-1.5 text-sm text-neutral-600 leading-relaxed">
+                      {order.items.join(', ')}
+                    </p>
+                  </div>
+                  <div className="flex flex-col items-end gap-2 shrink-0">
+                    <span className="font-semibold text-sm text-neutral-800">
+                      {formatVND(order.total)}
+                    </span>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setDetailId(order.id)}
+                    >
+                      Xem chi tiết
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )
+          })}
+        </div>
+      )}
+
+      <OrderDetailDialog orderId={detailId} onClose={() => setDetailId(null)} />
+    </div>
+  )
+}
+
+function OrderDetailDialog({
+  orderId,
+  onClose
+}: {
+  orderId: number | null
+  onClose: () => void
+}) {
+  const [order, setOrder] = useState<OrderDetail | null>(null)
+  const [loading, setLoading] = useState(false)
+
+  useEffect(() => {
+    if (!orderId) return
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setLoading(true)
+    setOrder(null)
+    fetchAdmin(`${API}/api/orders/me/${orderId}`)
+      .then((r) => r.json())
+      .then((data: OrderDetail) => setOrder(data))
+      .catch(() => {})
+      .finally(() => setLoading(false))
+  }, [orderId])
+
+  const meta = order
+    ? (ORDER_STATUS_META[order.status] ?? {
+        label: order.status,
+        className: 'text-gray-700 bg-gray-50 border border-gray-200'
+      })
+    : null
+
+  return (
+    <Dialog open={!!orderId} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent
+        showCloseButton
+        className="max-w-lg max-h-[90vh] overflow-y-auto"
+      >
+        <DialogHeader>
+          <DialogTitle>
+            {orderId ? `Đơn hàng #${orderId}` : 'Đơn hàng'}
+          </DialogTitle>
+        </DialogHeader>
+
+        {loading || !order ? (
+          <div className="flex justify-center py-10">
+            <div className="w-6 h-6 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : (
+          <div className="flex flex-col gap-5">
+            <div className="flex items-center justify-between">
+              <span
+                className={`text-xs font-medium px-2 py-0.5 rounded-full ${meta!.className}`}
+              >
+                {meta!.label}
+              </span>
+              <span className="text-xs text-neutral-400">
+                {formatDate(order.createdAt)}
+              </span>
+            </div>
+
+            {order.trackingCode && (
+              <p className="text-sm text-neutral-600">
+                Mã vận đơn:{' '}
+                <span className="font-medium text-neutral-800">
+                  {order.trackingCode}
+                </span>
+              </p>
+            )}
+
+            <div>
+              <h3 className="text-sm font-semibold text-neutral-800 mb-2">
+                Địa chỉ giao hàng
+              </h3>
+              <p className="text-sm text-neutral-600">
+                {order.address.fullName} · {order.address.phone}
+              </p>
+              <p className="text-sm text-neutral-600">{order.address.detail}</p>
+            </div>
+
+            <div>
+              <h3 className="text-sm font-semibold text-neutral-800 mb-2">
+                Sản phẩm
+              </h3>
+              <div className="flex flex-col gap-2">
+                {order.items.map((item) => (
+                  <div
+                    key={item.id}
+                    className="flex items-center justify-between text-sm"
+                  >
+                    <span className="text-neutral-600">
+                      {item.name} ×{item.quantity}
+                    </span>
+                    <span className="text-neutral-800">
+                      {formatVND(item.total)}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div className="border-t border-gray-100 pt-3 flex flex-col gap-1.5 text-sm">
+              <div className="flex justify-between text-neutral-500">
+                <span>Tạm tính</span>
+                <span>{formatVND(order.subtotal)}</span>
+              </div>
+              <div className="flex justify-between text-neutral-500">
+                <span>Phí vận chuyển</span>
+                <span>{formatVND(order.shippingFee)}</span>
+              </div>
+              {order.discount > 0 && (
+                <div className="flex justify-between text-neutral-500">
+                  <span>Giảm giá</span>
+                  <span>-{formatVND(order.discount)}</span>
+                </div>
+              )}
+              <div className="flex justify-between font-semibold text-neutral-800 pt-1.5 border-t border-gray-100">
+                <span>Tổng cộng</span>
+                <span>{formatVND(order.total)}</span>
+              </div>
+            </div>
+
+            {order.note && (
+              <p className="text-xs text-neutral-400">Ghi chú: {order.note}</p>
+            )}
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   )

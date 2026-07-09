@@ -1,38 +1,28 @@
 import { staticUrl } from '@/lib/utils'
 import Link from 'next/link'
 import Image from 'next/image'
+import { Phone, Truck } from 'lucide-react'
 
 const navLinks = [
   { href: '#home-section', label: 'Trang chủ' },
   { href: '#about-section', label: 'Về chúng tôi' },
-  { href: '#product-section', label: 'Công thức' },
-  { href: '#gallery-section', label: 'Thư viện' }
+  { href: '#product-section', label: 'Sản phẩm' },
+  { href: '#faqs-section', label: 'FAQ' }
 ]
 
-const companyLinks = [
-  'Giới thiệu',
-  'Tuyển dụng',
-  'Di động',
-  'Blog',
-  'Cách chúng tôi làm việc'
-]
-const infoLinks = ['FAQ', 'Báo chí', 'Đối tác', 'Nhà hàng', 'Cộng tác viên']
+const FB_URL = `https://www.facebook.com/${process.env.NEXT_PUBLIC_FB_PAGE_ID}`
+const TIKTOK_URL = process.env.NEXT_PUBLIC_TIKTOK_URL ?? '#'
 
 const socials = [
   {
-    href: '#',
+    href: FB_URL,
     label: 'Facebook',
-    path: 'M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z'
+    path: 'M24 12.073C24 5.404 18.627 0 12 0S0 5.404 0 12.073C0 18.1 4.388 23.094 10.125 24v-8.437H7.078v-3.49h3.047V9.41c0-3.025 1.792-4.697 4.533-4.697 1.312 0 2.686.235 2.686.235v2.97h-1.514c-1.491 0-1.956.93-1.956 1.886v2.268h3.328l-.532 3.49h-2.796V24C19.612 23.094 24 18.1 24 12.073z'
   },
   {
-    href: '#',
-    label: 'Instagram',
-    path: 'M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37zM17.5 6.5h.01M7.5 2h9A5.5 5.5 0 0 1 22 7.5v9A5.5 5.5 0 0 1 16.5 22h-9A5.5 5.5 0 0 1 2 16.5v-9A5.5 5.5 0 0 1 7.5 2z'
-  },
-  {
-    href: '#',
-    label: 'X / Twitter',
-    path: 'M4 4l16 16M4 20 20 4'
+    href: TIKTOK_URL,
+    label: 'TikTok',
+    path: 'M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.33 6.33 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.76a4.85 4.85 0 0 1-1.01-.07z'
   }
 ]
 
@@ -40,7 +30,7 @@ export function Footer() {
   return (
     <footer className="pt-16 bg-darkmode">
       <div className="container mx-auto max-w-7xl px-4">
-        <div className="grid grid-cols-1 sm:grid-cols-5 lg:gap-20 md:gap-6 sm:gap-12 gap-6 pb-16">
+        <div className="grid grid-cols-1 sm:grid-cols-4 lg:gap-20 md:gap-6 sm:gap-12 gap-6 pb-16">
           <div className="col-span-2">
             <Link
               href="/"
@@ -64,16 +54,14 @@ export function Footer() {
                 <Link
                   key={label}
                   href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   aria-label={label}
                   className="group bg-white hover:bg-primary rounded-full shadow-xl p-3"
                 >
                   <svg
                     viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
+                    fill="currentColor"
                     className="w-4 h-4 text-black group-hover:text-white transition-colors"
                   >
                     <path d={path} />
@@ -84,42 +72,10 @@ export function Footer() {
           </div>
 
           <div>
-            <h4 className="text-white mb-9 font-semibold text-xl">Công ty</h4>
-            <ul>
-              {companyLinks.map((item) => (
-                <li key={item} className="pb-5">
-                  <Link
-                    href="#"
-                    className="text-white/70 hover:text-primary text-base transition-colors"
-                  >
-                    {item}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="text-white mb-9 font-semibold text-xl">Thông tin</h4>
-            <ul>
-              {infoLinks.map((item) => (
-                <li key={item} className="pb-5">
-                  <Link
-                    href="#"
-                    className="text-white/70 hover:text-primary text-base transition-colors"
-                  >
-                    {item}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div>
-            <h4 className="text-white mb-9 font-semibold text-xl">Khác</h4>
+            <h4 className="text-white mb-9 font-semibold text-xl">Khám phá</h4>
             <ul>
               {navLinks.map(({ href, label }) => (
-                <li key={label} className="pb-4">
+                <li key={label} className="pb-5">
                   <Link
                     href={href}
                     className="text-white/70 hover:text-primary text-base transition-colors"
@@ -130,26 +86,27 @@ export function Footer() {
               ))}
             </ul>
           </div>
+
+          <div>
+            <h4 className="text-white mb-9 font-semibold text-xl">Liên hệ</h4>
+            <Link
+              href="tel:+84869863088"
+              className="flex items-center gap-3 text-white/70 hover:text-primary text-base transition-colors mb-5"
+            >
+              <Phone className="w-5 h-5 shrink-0" />
+              0869 863 088
+            </Link>
+            <div className="flex items-start gap-3 text-white/50 text-sm">
+              <Truck className="w-5 h-5 shrink-0" />
+              Giao hàng toàn quốc, xác nhận đơn trong 2–4 giờ làm việc.
+            </div>
+          </div>
         </div>
 
-        <div className="border-t border-white/15 py-10 flex justify-between items-center">
+        <div className="border-t border-white/15 py-10 flex justify-center items-center">
           <p className="text-sm text-white/70">
             © 2025 Món Ngon Nhớ Lâu. Đồ nhà làm — mẹ tự tay chế biến.
           </p>
-          <div>
-            <Link
-              href="#"
-              className="text-sm text-white/70 px-5 border-r border-white/15 hover:text-primary transition-colors"
-            >
-              Chính sách bảo mật
-            </Link>
-            <Link
-              href="#"
-              className="text-sm text-white/70 px-5 hover:text-primary transition-colors"
-            >
-              Điều khoản sử dụng
-            </Link>
-          </div>
         </div>
       </div>
     </footer>

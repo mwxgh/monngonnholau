@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { Poppins } from 'next/font/google'
 import Script from 'next/script'
+import { Toaster } from 'sonner'
 import './globals.css'
 
 const poppins = Poppins({
@@ -24,6 +25,7 @@ export default function RootLayout({
     <html lang="vi" className={`${poppins.variable} h-full antialiased`}>
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
         {children}
+        <Toaster position="top-right" />
         {process.env.NEXT_PUBLIC_TAWK_PROPERTY_ID && (
           <Script
             id="tawk-to"

@@ -55,10 +55,7 @@ export class AuthController {
   @Public()
   @Get('google/callback')
   @UseGuards(AuthGuard('google'))
-  googleCallback(
-    @CurrentUser() profile: GoogleProfile,
-    @Res({ passthrough: true }) res: Response
-  ) {
+  googleCallback(@CurrentUser() profile: GoogleProfile, @Res() res: Response) {
     return this.authService.handleOAuthLogin(profile, OAuthProvider.GOOGLE, res)
   }
 
@@ -73,7 +70,7 @@ export class AuthController {
   @UseGuards(AuthGuard('facebook'))
   facebookCallback(
     @CurrentUser() profile: FacebookProfile,
-    @Res({ passthrough: true }) res: Response
+    @Res() res: Response
   ) {
     return this.authService.handleOAuthLogin(
       profile,

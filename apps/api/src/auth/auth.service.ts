@@ -94,7 +94,9 @@ export class AuthService {
       }
     }
 
-    return this.issueTokens(user, res)
+    const { accessToken } = this.issueTokens(user, res)
+    const clientUrl = this.config.get<string>('CLIENT_URL')
+    res.redirect(`${clientUrl}/auth/callback?token=${accessToken}`)
   }
 
   refresh(user: unknown, res: Response) {

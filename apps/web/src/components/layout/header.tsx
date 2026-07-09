@@ -158,15 +158,17 @@ export function Header() {
                         Quản trị hệ thống
                       </Button>
                     )}
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="w-full justify-start gap-2 px-4 py-3 h-auto rounded-none"
-                      render={<Link href="/account" />}
-                    >
-                      <User className="w-4 h-4 text-gray-500" />
-                      Tài khoản của tôi
-                    </Button>
+                    {!isAdmin && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="w-full justify-start gap-2 px-4 py-3 h-auto rounded-none"
+                        render={<Link href="/account" />}
+                      >
+                        <User className="w-4 h-4 text-gray-500" />
+                        Tài khoản của tôi
+                      </Button>
+                    )}
                     <Button
                       variant="ghost"
                       size="sm"
@@ -291,20 +293,22 @@ export function Header() {
                       Quản trị hệ thống
                     </Button>
                   )}
-                  <Button
-                    variant="outline"
-                    size="pill"
-                    className="w-full gap-2"
-                    render={
-                      <Link
-                        href="/account"
-                        onClick={() => setNavbarOpen(false)}
-                      />
-                    }
-                  >
-                    <User className="w-5 h-5" />
-                    Tài khoản của tôi
-                  </Button>
+                  {!isAdmin && (
+                    <Button
+                      variant="outline"
+                      size="pill"
+                      className="w-full gap-2"
+                      render={
+                        <Link
+                          href="/account"
+                          onClick={() => setNavbarOpen(false)}
+                        />
+                      }
+                    >
+                      <User className="w-5 h-5" />
+                      Tài khoản của tôi
+                    </Button>
+                  )}
                   <Button
                     variant="destructive"
                     size="pill"

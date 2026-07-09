@@ -17,12 +17,20 @@ export class NewsletterService {
     const existing = await this.prisma.newsletterSubscriber.findUnique({
       where: { email }
     })
-    if (existing) return { message: 'Email đã được đăng ký trước đó' }
+    if (existing) {
+      return {
+        message: 'Email đã được đăng ký trước đó',
+        alreadySubscribed: true
+      }
+    }
 
     await this.prisma.newsletterSubscriber.create({ data: { email } })
     void this.mail.sendNewsletterWelcome({ to: email })
 
-    return { message: 'Đăng ký nhận bản tin thành công' }
+    return {
+      message: 'Đăng ký nhận bản tin thành công',
+      alreadySubscribed: false
+    }
   }
 
   findAll() {

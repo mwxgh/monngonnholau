@@ -410,6 +410,71 @@ export class OrdersService {
     }))
   }
 
+  async findAllForUser(userId: number) {
+    const orders = await this.prisma.order.findMany({
+      where: { userId },
+      orderBy: { createdAt: 'desc' },
+      include: {
+        items: {
+          select: { name: true, quantity: true },
+          orderBy: { id: 'asc' }
+        },
+        payment: { select: { status: true } }
+      }
+    })
+
+    return orders.map((o) => ({
+      id: o.id,
+      items: o.items.map((i) => `${i.name} ×${i.quantity}`),
+      total: Number(o.total),
+      status: o.status,
+      paymentMethod: o.paymentMethod,
+      paymentStatus: o.payment?.status ?? null,
+      trackingCode: o.trackingCode,
+      createdAt: o.createdAt
+    }))
+  }
+
+  async findOneForUser(userId: number, id: number) {
+    const order = await this.prisma.order.findFirst({
+      where: { id, userId },
+      include: {
+        address: true,
+        items: { orderBy: { id: 'asc' } },
+        payment: { select: { status: true } }
+      }
+    })
+    if (!order) throw new BadRequestException('Đơn hàng không tồn tại')
+
+    return {
+      id: order.id,
+      status: order.status,
+      paymentMethod: order.paymentMethod,
+      paymentStatus: order.payment?.status ?? null,
+      note: order.note,
+      trackingCode: order.trackingCode,
+      subtotal: Number(order.subtotal),
+      shippingFee: Number(order.shippingFee),
+      discount: Number(order.discount),
+      total: Number(order.total),
+      createdAt: order.createdAt,
+      address: {
+        fullName: order.address.fullName,
+        phone: order.address.phone,
+        email: order.address.email,
+        detail: order.address.detail
+      },
+      items: order.items.map((i) => ({
+        id: i.id,
+        name: i.name,
+        sku: i.sku,
+        price: Number(i.price),
+        quantity: i.quantity,
+        total: Number(i.total)
+      }))
+    }
+  }
+
   async exportOrdersExcel(status?: string): Promise<ExcelJS.Buffer> {
     const orders = await this.prisma.order.findMany({
       where: status ? { status: status as OrderStatus } : undefined,
