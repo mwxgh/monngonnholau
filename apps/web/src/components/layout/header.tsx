@@ -8,14 +8,22 @@ import {
   Menu,
   Phone,
   ShoppingCart,
+  ClipboardList,
   User,
+  UserPlus,
   LogOut,
   X,
   ShieldCheck
 } from 'lucide-react'
 import { LoginModal } from '@/components/auth/login-modal'
 import { OrderModal } from '@/components/order/order-modal'
+import { CartPreview } from '@/components/layout/cart-preview'
 import { Button } from '@/components/ui/button'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger
+} from '@/components/ui/tooltip'
 import { useCart } from '@/lib/cart-context'
 
 const navLinks = [
@@ -30,11 +38,15 @@ export function Header() {
   const [sticky, setSticky] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [isAdmin, setIsAdmin] = useState(false)
+  const [isStaff, setIsStaff] = useState(false)
   const [loginOpen, setLoginOpen] = useState(false)
   const [orderOpen, setOrderOpen] = useState(false)
   const [orderView, setOrderView] = useState<'browse' | 'cart'>('browse')
   const mobileMenuRef = useRef<HTMLDivElement>(null)
   const { itemCount } = useCart()
+
+  // Nhân viên/quản trị đặt hàng qua kênh nội bộ, không dùng giỏ hàng khách
+  const canOrder = !isAdmin && !isStaff
 
   function openOrder(view: 'browse' | 'cart') {
     setOrderView(view)
@@ -49,6 +61,7 @@ export function Header() {
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setIsLoggedIn(true)
       setIsAdmin(payload.role === 'ADMIN')
+      setIsStaff(payload.role === 'STAFF')
     } catch {
       localStorage.removeItem('access_token')
     }
@@ -123,23 +136,27 @@ export function Header() {
               <Phone className="text-primary w-6 h-6 inline-block mr-1" />
               0869 863 088
             </Link>
-            <Button
-              variant="outline"
-              size="icon"
-              className="relative rounded-full"
-              onClick={() => openOrder('cart')}
-              aria-label="Giỏ hàng"
-            >
-              <ShoppingCart className="w-5 h-5" />
-              {itemCount > 0 && (
-                <span className="absolute -top-1.5 -right-1.5 flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1 text-[11px] font-semibold text-white">
-                  {itemCount}
-                </span>
-              )}
-            </Button>
-            <Button size="pill" onClick={() => openOrder('browse')}>
-              Đặt hàng
-            </Button>
+            {canOrder && (
+              <>
+                <CartPreview onOpenCart={() => openOrder('cart')} />
+                <Tooltip>
+                  <TooltipTrigger
+                    render={
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="rounded-full"
+                        aria-label="Đặt hàng"
+                        onClick={() => openOrder('browse')}
+                      />
+                    }
+                  >
+                    <ClipboardList className="w-5 h-5" />
+                  </TooltipTrigger>
+                  <TooltipContent sideOffset={24}>Đặt hàng</TooltipContent>
+                </Tooltip>
+              </>
+            )}
             {isLoggedIn ? (
               <div className="relative group">
                 <Button variant="outline" size="icon" className="rounded-full">
@@ -177,6 +194,7 @@ export function Header() {
                         localStorage.removeItem('access_token')
                         setIsLoggedIn(false)
                         setIsAdmin(false)
+                        setIsStaff(false)
                       }}
                     >
                       <LogOut className="w-4 h-4" />
@@ -186,32 +204,45 @@ export function Header() {
                 </div>
               </div>
             ) : (
-              <Button
-                variant="outline"
-                size="pill"
-                onClick={() => setLoginOpen(true)}
-              >
-                Đăng nhập
-              </Button>
+              <Tooltip>
+                <TooltipTrigger
+                  render={
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      className="rounded-full"
+                      aria-label="Đăng nhập"
+                      onClick={() => setLoginOpen(true)}
+                    />
+                  }
+                >
+                  <UserPlus className="w-5 h-5" />
+                </TooltipTrigger>
+                <TooltipContent sideOffset={24}>
+                  Đăng nhập / Đăng ký
+                </TooltipContent>
+              </Tooltip>
             )}
           </div>
 
           {/* Mobile right */}
           <div className="flex items-center gap-1 lg:hidden">
-            <Button
-              variant="ghost"
-              size="icon"
-              className="relative"
-              onClick={() => openOrder('cart')}
-              aria-label="Giỏ hàng"
-            >
-              <ShoppingCart className="w-6 h-6" />
-              {itemCount > 0 && (
-                <span className="absolute top-0.5 right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-white">
-                  {itemCount}
-                </span>
-              )}
-            </Button>
+            {canOrder && (
+              <Button
+                variant="ghost"
+                size="icon"
+                className="relative"
+                onClick={() => openOrder('cart')}
+                aria-label="Giỏ hàng"
+              >
+                <ShoppingCart className="w-6 h-6" />
+                {itemCount > 0 && (
+                  <span className="absolute top-0.5 right-0.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-primary px-1 text-[10px] font-semibold text-white">
+                    {itemCount}
+                  </span>
+                )}
+              </Button>
+            )}
             <Button
               variant="ghost"
               size="icon"
@@ -265,16 +296,18 @@ export function Header() {
               </a>
             ))}
             <div className="mt-4 flex flex-col gap-3 w-full">
-              <Button
-                size="pill"
-                className="w-full"
-                onClick={() => {
-                  setNavbarOpen(false)
-                  openOrder('browse')
-                }}
-              >
-                Đặt hàng
-              </Button>
+              {canOrder && (
+                <Button
+                  size="pill"
+                  className="w-full"
+                  onClick={() => {
+                    setNavbarOpen(false)
+                    openOrder('browse')
+                  }}
+                >
+                  Đặt hàng
+                </Button>
+              )}
               {isLoggedIn ? (
                 <>
                   {isAdmin && (
@@ -317,6 +350,7 @@ export function Header() {
                       localStorage.removeItem('access_token')
                       setIsLoggedIn(false)
                       setIsAdmin(false)
+                      setIsStaff(false)
                       setNavbarOpen(false)
                     }}
                   >
@@ -358,6 +392,7 @@ export function Header() {
             if (token) {
               const payload = JSON.parse(atob(token.split('.')[1]))
               setIsAdmin(payload.role === 'ADMIN')
+              setIsStaff(payload.role === 'STAFF')
             }
           } catch {
             // ignore

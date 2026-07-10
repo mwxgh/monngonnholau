@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Image from 'next/image'
 import Link from 'next/link'
 import { Check, ShoppingCart } from 'lucide-react'
@@ -25,6 +25,19 @@ interface Product {
 export function ProductGrid({ products }: { products: Product[] }) {
   const { addItem } = useCart()
   const [justAdded, setJustAdded] = useState<number | null>(null)
+  const [canOrder, setCanOrder] = useState(true)
+
+  useEffect(() => {
+    const token = localStorage.getItem('access_token')
+    if (!token) return
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]))
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setCanOrder(payload.role !== 'ADMIN' && payload.role !== 'STAFF')
+    } catch {
+      // ignore
+    }
+  }, [])
 
   function handleAdd(product: Product) {
     const variant = product.variants[0]
@@ -74,18 +87,20 @@ export function ProductGrid({ products }: { products: Product[] }) {
                     đ
                   </p>
                   <div className="flex items-center gap-2">
-                    <Button
-                      size="icon"
-                      className="rounded-full"
-                      aria-label="Thêm vào giỏ hàng"
-                      onClick={() => handleAdd(product)}
-                    >
-                      {justAdded === product.id ? (
-                        <Check className="w-4 h-4" />
-                      ) : (
-                        <ShoppingCart className="w-4 h-4" />
-                      )}
-                    </Button>
+                    {canOrder && (
+                      <Button
+                        size="icon"
+                        className="rounded-full"
+                        aria-label="Thêm vào giỏ hàng"
+                        onClick={() => handleAdd(product)}
+                      >
+                        {justAdded === product.id ? (
+                          <Check className="w-4 h-4" />
+                        ) : (
+                          <ShoppingCart className="w-4 h-4" />
+                        )}
+                      </Button>
+                    )}
                     <Button size="pill" render={<Link href="#" />}>
                       Tìm hiểu thêm
                     </Button>
