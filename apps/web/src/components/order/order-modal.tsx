@@ -18,6 +18,7 @@ import {
 import { AcInput } from '@/components/ui/ac-input'
 import { cn } from '@/lib/utils'
 import { useCart } from '@/lib/cart-context'
+import { showToast } from '@/lib/toast'
 
 // ── Types ──────────────────────────────────────────────────────────────────
 
@@ -355,7 +356,6 @@ export function OrderModal({
   const [paymentMethod, setPaymentMethod] = useState<'ONLINE' | 'COD'>('ONLINE')
 
   // Submit
-  const [serverError, setServerError] = useState('')
   const [orderId, setOrderId] = useState<number | null>(null)
   const [paymentInfo, setPaymentInfo] = useState<PaymentInfo | null>(null)
   const [paymentChecking, setPaymentChecking] = useState(false)
@@ -465,7 +465,6 @@ export function OrderModal({
     onClose()
     setTimeout(() => {
       setStep(1)
-      setServerError('')
       setOrderId(null)
       setPaymentInfo(null)
       setPaymentMethod('ONLINE')
@@ -534,7 +533,6 @@ export function OrderModal({
   const hasItems = cartItems.length > 0
 
   async function handleSubmit(values: InfoValues) {
-    setServerError('')
     try {
       const res = await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/api/orders/quick`,
@@ -557,11 +555,16 @@ export function OrderModal({
       )
       const data = await res.json()
       if (!res.ok) {
-        setServerError(data.message ?? 'Đặt hàng thất bại.')
+        showToast('error', 'Đặt hàng thất bại', data.message)
         return
       }
       setOrderId(data.orderId)
       savedCart.clear()
+      showToast(
+        'success',
+        'Đặt hàng thành công',
+        `Mã đơn hàng #${data.orderId}`
+      )
       if (data.qrCode) {
         setPaymentInfo({
           qrCode: data.qrCode,
@@ -574,7 +577,7 @@ export function OrderModal({
         setStep('success')
       }
     } catch {
-      setServerError('Không thể kết nối đến máy chủ.')
+      showToast('error', 'Đặt hàng thất bại', 'Không thể kết nối đến máy chủ.')
     }
   }
 
@@ -762,10 +765,7 @@ export function OrderModal({
             <div className="px-6 pt-6 pb-4 border-b shrink-0">
               <button
                 type="button"
-                onClick={() => {
-                  setStep(1)
-                  setServerError('')
-                }}
+                onClick={() => setStep(1)}
                 className="text-xs text-muted-foreground hover:text-foreground mb-2 flex items-center gap-1 transition-colors"
               >
                 ← Quay lại
@@ -1059,12 +1059,6 @@ export function OrderModal({
                       <span className="text-primary">{formatVND(total)}</span>
                     </div>
                   </div>
-
-                  {serverError && (
-                    <p className="text-sm text-red-500 text-center">
-                      {serverError}
-                    </p>
-                  )}
                 </form>
               </Form>
             </div>

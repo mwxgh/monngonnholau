@@ -12,6 +12,7 @@ import {
 } from '@prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 import { MailService } from '../mail/mail.service'
+import { UsersService } from '../users/users.service'
 import { CreateQuickOrderDto } from './dto/create-quick-order.dto'
 
 /**
@@ -133,6 +134,7 @@ export class OrdersService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly mail: MailService,
+    private readonly users: UsersService,
     private readonly config: ConfigService
   ) {
     const clientId = this.config.get<string>('PAYOS_CLIENT_ID')
@@ -163,6 +165,8 @@ export class OrdersService {
   }
 
   async createQuickOrder(dto: CreateQuickOrderDto) {
+    await this.users.assertNotStaffContact(dto.phone, dto.email)
+
     const skus = dto.items.map((i) => i.sku)
     const variants = await this.prisma.productVariant.findMany({
       where: { sku: { in: skus } },

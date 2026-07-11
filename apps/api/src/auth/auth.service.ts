@@ -46,6 +46,9 @@ export class AuthService {
       data: { ...dto, password: hashed },
       omit: { password: true }
     })
+
+    await this.syncGuestOrders(user.id, { email: dto.email, phone: dto.phone })
+
     return user
   }
 
@@ -81,6 +84,7 @@ export class AuthService {
           }
         }
       })
+      await this.syncGuestOrders(user.id, { email: profile.email })
     } else {
       const linked = await this.prisma.oAuthAccount.findUnique({
         where: {
@@ -106,6 +110,62 @@ export class AuthService {
   logout(res: Response) {
     res.clearCookie('refresh_token')
     return { message: 'Đăng xuất thành công' }
+  }
+
+  /**
+   * Links guest checkout data (Address/Order/Payment rows created before the
+   * customer had an account, so their userId is null) to the account they
+   * just registered, matching by phone or email from the order's address.
+   */
+  private async syncGuestOrders(
+    userId: number,
+    match: { email: string; phone?: string }
+  ) {
+    const addresses = await this.prisma.address.findMany({
+      where: {
+        userId: null,
+        OR: [
+          { email: match.email },
+          ...(match.phone ? [{ phone: match.phone }] : [])
+        ]
+      },
+      select: { id: true }
+    })
+    if (addresses.length === 0) return
+
+    const addressIds = addresses.map((a) => a.id)
+
+    const orders = await this.prisma.order.findMany({
+      where: { addressId: { in: addressIds }, userId: null },
+      select: { id: true, paymentId: true }
+    })
+    const orderIds = orders.map((o) => o.id)
+    const paymentIds = orders
+      .map((o) => o.paymentId)
+      .filter((id): id is number => id != null)
+
+    await this.prisma.$transaction([
+      this.prisma.address.updateMany({
+        where: { id: { in: addressIds } },
+        data: { userId }
+      }),
+      ...(orderIds.length > 0
+        ? [
+            this.prisma.order.updateMany({
+              where: { id: { in: orderIds } },
+              data: { userId }
+            })
+          ]
+        : []),
+      ...(paymentIds.length > 0
+        ? [
+            this.prisma.payment.updateMany({
+              where: { id: { in: paymentIds } },
+              data: { userId }
+            })
+          ]
+        : [])
+    ])
   }
 
   private issueTokens(user: TokenUser, res: Response) {

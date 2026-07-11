@@ -4,6 +4,7 @@ import {
   NotFoundException
 } from '@nestjs/common'
 import * as bcrypt from 'bcrypt'
+import { Role } from '@prisma/client'
 import { PrismaService } from '../prisma/prisma.service.js'
 import { UpdateUserDto } from './dto/update-user.dto.js'
 import { UpdateProfileDto } from './dto/update-profile.dto.js'
@@ -99,6 +100,32 @@ export class UsersService {
 
   // ── Addresses ───────────────────────────────────────────────
 
+  /** Recipient phone/email must not belong to an ADMIN/STAFF account. */
+  async assertNotStaffContact(phone: string, email?: string) {
+    const [byPhone, byEmail] = await Promise.all([
+      this.prisma.user.findUnique({ where: { phone }, select: { role: true } }),
+      email
+        ? this.prisma.user.findUnique({
+            where: { email: email.toLowerCase() },
+            select: { role: true }
+          })
+        : Promise.resolve(null)
+    ])
+    const isStaff = (u: { role: Role } | null) =>
+      !!u && (u.role === Role.ADMIN || u.role === Role.STAFF)
+
+    if (isStaff(byPhone)) {
+      throw new BadRequestException(
+        'Số điện thoại này không thể dùng làm thông tin nhận hàng'
+      )
+    }
+    if (isStaff(byEmail)) {
+      throw new BadRequestException(
+        'Email này không thể dùng làm thông tin nhận hàng'
+      )
+    }
+  }
+
   getAddresses(userId: number) {
     return this.prisma.address.findMany({
       where: { userId },
@@ -107,6 +134,7 @@ export class UsersService {
   }
 
   async addAddress(userId: number, dto: UpsertAddressDto) {
+    await this.assertNotStaffContact(dto.phone, dto.email)
     if (dto.isDefault) {
       await this.prisma.address.updateMany({
         where: { userId },
@@ -125,6 +153,7 @@ export class UsersService {
       where: { id: addressId, userId }
     })
     if (!existing) throw new NotFoundException('Địa chỉ không tồn tại')
+    await this.assertNotStaffContact(dto.phone, dto.email)
     if (dto.isDefault) {
       await this.prisma.address.updateMany({
         where: { userId },
