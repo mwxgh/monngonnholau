@@ -16,6 +16,7 @@ import {
   DialogHeader,
   DialogTitle
 } from '@/components/ui/dialog'
+import { AdminCreateOrderDialog } from '@/components/order/admin-create-order-dialog'
 
 interface AdminOrder {
   id: number
@@ -141,6 +142,7 @@ export default function AdminOrdersPage() {
   const [exporting, setExporting] = useState(false)
   const [detailId, setDetailId] = useState<number | null>(null)
   const [advancing, setAdvancing] = useState<number | null>(null)
+  const [creating, setCreating] = useState(false)
 
   async function quickAdvance(order: AdminOrder) {
     const next = NEXT_STATUSES[order.status]?.[0]
@@ -211,15 +213,23 @@ export default function AdminOrdersPage() {
             Quản lý toàn bộ đơn hàng của cửa hàng.
           </p>
         </div>
-        {filter === 'PROCESSING' && (
+        <div className="flex items-center gap-2">
           <button
-            onClick={exportExcel}
-            disabled={exporting || orders.length === 0}
-            className="px-3 py-1.5 rounded-md text-xs font-medium border border-border bg-background hover:border-primary/50 disabled:opacity-50 disabled:cursor-not-allowed"
+            onClick={() => setCreating(true)}
+            className="px-3 py-1.5 rounded-md text-xs font-medium bg-primary text-white hover:opacity-90"
           >
-            {exporting ? 'Đang xuất...' : 'Xuất Excel'}
+            + Tạo đơn hàng
           </button>
-        )}
+          {filter === 'PROCESSING' && (
+            <button
+              onClick={exportExcel}
+              disabled={exporting || orders.length === 0}
+              className="px-3 py-1.5 rounded-md text-xs font-medium border border-border bg-background hover:border-primary/50 disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {exporting ? 'Đang xuất...' : 'Xuất Excel'}
+            </button>
+          )}
+        </div>
       </div>
 
       <Card>
@@ -401,6 +411,12 @@ export default function AdminOrdersPage() {
             prev.map((o) => (o.id === id ? { ...o, status } : o))
           )
         }}
+      />
+
+      <AdminCreateOrderDialog
+        open={creating}
+        onClose={() => setCreating(false)}
+        onCreated={loadOrders}
       />
     </div>
   )

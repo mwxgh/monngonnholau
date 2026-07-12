@@ -506,11 +506,14 @@ export class OrdersService {
       const isCod = order.paymentMethod === PaymentMethod.COD
       const weightKg = order.weight ? order.weight / 1000 : null
       const address = order.address
-      const firstItem = order.items[0]
+      const productLabel = order.items
+        .map((i) => `${i.quantity}${i.sku}`)
+        .join(' | ')
 
-      // 1 order = 1 row. Product name is taken from the first item; we
-      // don't split variants into separate rows (Quantity/Price aren't
-      // required since "Giao hàng một phần" (partial delivery) is always N).
+      // 1 order = 1 row. Product name lists every item as "{qty}{sku}"
+      // joined by " | " (e.g. "3PO | 2SO | 1SR"); Quantity is always 1 since
+      // only the COD amount (order.subtotal, below) needs to be accurate —
+      // we don't split variants into separate rows.
       // Write cell by cell (not row.values) so we don't touch the hidden
       // formula cells in columns AC/AD (29/30) the template uses for
       // validation.
@@ -525,9 +528,9 @@ export class OrdersService {
         address.street ?? address.detail,
         null,
         null,
-        firstItem.name,
-        firstItem.quantity,
-        Number(firstItem.price),
+        productLabel,
+        1,
+        Number(order.subtotal),
         weightKg,
         order.length,
         order.width,

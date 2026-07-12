@@ -59,6 +59,12 @@ export class OrdersController {
   }
 
   @Roles(Role.ADMIN, Role.STAFF)
+  @Post('admin')
+  createAdminOrder(@Body() dto: CreateQuickOrderDto) {
+    return this.ordersService.createQuickOrder(dto)
+  }
+
+  @Roles(Role.ADMIN, Role.STAFF)
   @Get('admin/export')
   async exportOrders(@Query('status') status?: string) {
     const buffer = await this.ordersService.exportOrdersExcel(status)
