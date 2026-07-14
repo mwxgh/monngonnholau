@@ -4,10 +4,10 @@ import Image from 'next/image'
 import { Phone, Truck } from 'lucide-react'
 
 const navLinks = [
-  { href: '#home-section', label: 'Trang chủ' },
-  { href: '#about-section', label: 'Về chúng tôi' },
-  { href: '#product-section', label: 'Sản phẩm' },
-  { href: '#faqs-section', label: 'FAQ' }
+  { href: '/#home-section', label: 'Trang chủ' },
+  { href: '/#about-section', label: 'Về chúng tôi' },
+  { href: '/#product-section', label: 'Sản phẩm' },
+  { href: '/#faqs-section', label: 'FAQ' }
 ]
 
 const FB_URL = `https://www.facebook.com/${process.env.NEXT_PUBLIC_FB_PAGE_ID}`

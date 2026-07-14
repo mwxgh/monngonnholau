@@ -27,10 +27,10 @@ import {
 import { useCart } from '@/lib/cart-context'
 
 const navLinks = [
-  { href: '#home-section', label: 'Trang chủ' },
-  { href: '#about-section', label: 'Về chúng tôi' },
-  { href: '#product-section', label: 'Sản phẩm' },
-  { href: '#faqs-section', label: 'FAQ' }
+  { href: '/#home-section', label: 'Trang chủ' },
+  { href: '/#about-section', label: 'Về chúng tôi' },
+  { href: '/#product-section', label: 'Sản phẩm' },
+  { href: '/#faqs-section', label: 'FAQ' }
 ]
 
 export function Header() {
@@ -117,13 +117,13 @@ export function Header() {
           {/* Desktop nav */}
           <nav className="hidden lg:flex grow items-center gap-8 justify-center">
             {navLinks.map(({ href, label }) => (
-              <a
+              <Link
                 key={href}
                 href={href}
                 className="text-base font-medium hover:text-primary transition-colors"
               >
                 {label}
-              </a>
+              </Link>
             ))}
           </nav>
 
@@ -286,14 +286,14 @@ export function Header() {
           </div>
           <nav className="flex flex-col items-start p-4">
             {navLinks.map(({ href, label }) => (
-              <a
+              <Link
                 key={href}
                 href={href}
                 onClick={() => setNavbarOpen(false)}
                 className="text-base font-medium text-white/80 hover:text-primary py-2.5 px-3 w-full transition-colors"
               >
                 {label}
-              </a>
+              </Link>
             ))}
             <div className="mt-4 flex flex-col gap-3 w-full">
               {canOrder && (
