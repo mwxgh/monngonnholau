@@ -43,6 +43,8 @@ export class MailService {
     trackingCode: string
     carrier: string
     address: string
+    items: { name: string; sku: string; quantity: number; price: number }[]
+    total: number
   }) {
     const { error } = await this.resend.emails.send({
       from: this.from,
@@ -103,7 +105,9 @@ const styles = `
   h1 { font-size:24px; color:#111; }
   h2 { font-size:16px; color:#333; }
   p { font-size:14px; color:#444; margin:4px 0; }
-  .row { display:flex; justify-content:space-between; margin-bottom:8px; }
+  .row { width:100%; border-collapse:collapse; margin-bottom:8px; }
+  .row td { padding:0; vertical-align:top; }
+  .row td.amount { text-align:right; white-space:nowrap; padding-left:12px; }
   .total { font-size:16px; font-weight:bold; color:#111; }
   hr { border:none; border-top:1px solid #eee; margin:16px 0; }
   .footer { font-size:12px; color:#aaa; text-align:center; }
@@ -116,6 +120,20 @@ function vnd(amount: number) {
   }).format(amount)
 }
 
+function buildItemRows(
+  items: { name: string; sku: string; quantity: number; price: number }[]
+) {
+  return items
+    .map(
+      (i) => `
+      <table class="row" role="presentation"><tr>
+        <td><p style="margin:0">${i.name}</p><p style="font-size:12px;color:#888;margin:0">SKU: ${i.sku} × ${i.quantity}</p></td>
+        <td class="amount"><p style="margin:0">${vnd(i.price * i.quantity)}</p></td>
+      </tr></table>`
+    )
+    .join('')
+}
+
 function buildOrderCreatedHtml(p: {
   customerName: string
   orderId: number
@@ -125,15 +143,7 @@ function buildOrderCreatedHtml(p: {
   total: number
   address: string
 }) {
-  const itemRows = p.items
-    .map(
-      (i) => `
-      <div class="row">
-        <div><p style="margin:0">${i.name}</p><p style="font-size:12px;color:#888;margin:0">SKU: ${i.sku} × ${i.quantity}</p></div>
-        <p style="margin:0">${vnd(i.price * i.quantity)}</p>
-      </div>`
-    )
-    .join('')
+  const itemRows = buildItemRows(p.items)
 
   return `<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><style>${styles}</style></head>
   <body><div class="container">
@@ -143,9 +153,9 @@ function buildOrderCreatedHtml(p: {
     <h2>Chi tiết đơn hàng</h2>
     ${itemRows}
     <hr>
-    <div class="row"><p>Tạm tính</p><p>${vnd(p.subtotal)}</p></div>
-    <div class="row"><p>Phí vận chuyển</p><p>${vnd(p.shippingFee)}</p></div>
-    <div class="row"><p class="total">Tổng cộng</p><p class="total">${vnd(p.total)}</p></div>
+    <table class="row" role="presentation"><tr><td><p>Tạm tính</p></td><td class="amount"><p>${vnd(p.subtotal)}</p></td></tr></table>
+    <table class="row" role="presentation"><tr><td><p>Phí vận chuyển</p></td><td class="amount"><p>${vnd(p.shippingFee)}</p></td></tr></table>
+    <table class="row" role="presentation"><tr><td><p class="total">Tổng cộng</p></td><td class="amount"><p class="total">${vnd(p.total)}</p></td></tr></table>
     <h2>Địa chỉ giao hàng</h2>
     <p>${p.address}</p>
     <hr>
@@ -193,7 +203,11 @@ function buildOrderShippingHtml(p: {
   trackingCode: string
   carrier: string
   address: string
+  items: { name: string; sku: string; quantity: number; price: number }[]
+  total: number
 }) {
+  const itemRows = buildItemRows(p.items)
+
   return `<!DOCTYPE html><html lang="vi"><head><meta charset="UTF-8"><style>${styles}</style></head>
   <body><div class="container">
     <h1>Đơn hàng đang trên đường giao!</h1>
@@ -203,6 +217,11 @@ function buildOrderShippingHtml(p: {
     <p>Đơn vị vận chuyển: <strong>${p.carrier}</strong></p>
     <p>Mã vận đơn: <strong>${p.trackingCode}</strong></p>
     <p>Địa chỉ nhận hàng: ${p.address}</p>
+    <hr>
+    <h2>Chi tiết đơn hàng</h2>
+    ${itemRows}
+    <hr>
+    <table class="row" role="presentation"><tr><td><p class="total">Tổng cộng</p></td><td class="amount"><p class="total">${vnd(p.total)}</p></td></tr></table>
     <hr>
     <p class="footer">Món Ngon Nhớ Lâu — monngonnholau.online</p>
   </div></body></html>`

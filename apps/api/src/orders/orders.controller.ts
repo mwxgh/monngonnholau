@@ -16,6 +16,7 @@ import { Public } from '../auth/decorators/public.decorator'
 import { Roles } from '../auth/decorators/roles.decorator'
 import { CurrentUser } from '../auth/decorators/current-user.decorator'
 import { CreateQuickOrderDto } from './dto/create-quick-order.dto'
+import { CreateAdminOrderDto } from './dto/create-admin-order.dto'
 
 interface AuthUser {
   id: number
@@ -60,8 +61,11 @@ export class OrdersController {
 
   @Roles(Role.ADMIN, Role.STAFF)
   @Post('admin')
-  createAdminOrder(@Body() dto: CreateQuickOrderDto) {
-    return this.ordersService.createQuickOrder(dto)
+  createAdminOrder(@Body() dto: CreateAdminOrderDto) {
+    return this.ordersService.createQuickOrder(dto, {
+      isPrepaid: dto.isPrepaid,
+      shippingPayer: dto.shippingPayer
+    })
   }
 
   @Roles(Role.ADMIN, Role.STAFF)
@@ -84,9 +88,10 @@ export class OrdersController {
   @Patch('admin/:id/status')
   updateStatus(
     @Param('id', ParseIntPipe) id: number,
-    @Body('status') status: string
+    @Body('status') status: string,
+    @Body('trackingCode') trackingCode?: string
   ) {
-    return this.ordersService.updateOrderStatus(id, status)
+    return this.ordersService.updateOrderStatus(id, status, trackingCode)
   }
 
   @Public()

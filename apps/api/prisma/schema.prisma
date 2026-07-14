@@ -55,6 +55,11 @@ enum PaymentMethod {
   COD
 }
 
+enum ShippingPayer {
+  SENDER
+  RECEIVER
+}
+
 enum NotificationType {
   ORDER_CREATED
   ORDER_SHIPPING
@@ -231,6 +236,8 @@ model Order {
   payment         Payment?             @relation(fields: [paymentId], references: [id])
   status          OrderStatus          @default(PENDING_PAYMENT)
   paymentMethod   PaymentMethod        @default(ONLINE) @map("payment_method")
+  isPrepaid       Boolean              @default(false) @map("is_prepaid")
+  shippingPayer   ShippingPayer        @default(RECEIVER) @map("shipping_payer")
   note            String?
   trackingCode    String?              @unique @map("tracking_code")
   subtotal        Decimal              @db.Decimal(12, 2)

@@ -8,7 +8,8 @@ import {
   OrderStatus,
   PaymentMethod,
   PaymentStatus,
-  Prisma
+  Prisma,
+  ShippingPayer
 } from '@prisma/client'
 import { PrismaService } from '../prisma/prisma.service'
 import { MailService } from '../mail/mail.service'
@@ -103,6 +104,20 @@ const SPX_PROVINCES = [
 ]
 
 /**
+ * Guesses the carrier's display name from its tracking-code prefix, for the
+ * shipping-notification email (e.g. "SPXVN012345678..." -> SPX Express).
+ */
+function carrierFromTrackingCode(code: string): string {
+  const upper = code.toUpperCase()
+  if (upper.startsWith('SPX')) return 'SPX Express (Shopee Express)'
+  if (upper.startsWith('GHN')) return 'Giao Hàng Nhanh'
+  if (upper.startsWith('GHTK')) return 'Giao Hàng Tiết Kiệm'
+  if (upper.startsWith('VTP')) return 'Viettel Post'
+  if (upper.startsWith('JT') || upper.startsWith('J&T')) return 'J&T Express'
+  return 'Đơn vị vận chuyển'
+}
+
+/**
  * Normalizes a province name to the exact spelling SPX expects (uppercase,
  * strip the "Tỉnh"/"Thành phố"/"TP." prefix — except "TP. Hồ Chí Minh",
  * which keeps its "TP." prefix).
@@ -164,7 +179,10 @@ export class OrdersService {
     return expected === signature
   }
 
-  async createQuickOrder(dto: CreateQuickOrderDto) {
+  async createQuickOrder(
+    dto: CreateQuickOrderDto,
+    adminOptions?: { isPrepaid?: boolean; shippingPayer?: ShippingPayer }
+  ) {
     await this.users.assertNotStaffContact(dto.phone, dto.email)
 
     const skus = dto.items.map((i) => i.sku)
@@ -246,12 +264,18 @@ export class OrdersService {
     })
 
     const isCod = dto.paymentMethod === PaymentMethod.COD
+    const isPrepaid = adminOptions?.isPrepaid ?? false
     const order = await this.prisma.order.create({
       data: {
         addressId: address.id,
         note: dto.note ?? null,
-        status: isCod ? OrderStatus.PROCESSING : OrderStatus.PENDING_PAYMENT,
+        status:
+          isCod || isPrepaid
+            ? OrderStatus.PROCESSING
+            : OrderStatus.PENDING_PAYMENT,
         paymentMethod: isCod ? PaymentMethod.COD : PaymentMethod.ONLINE,
+        isPrepaid,
+        shippingPayer: adminOptions?.shippingPayer ?? ShippingPayer.RECEIVER,
         subtotal,
         shippingFee,
         discount: 0,
@@ -264,8 +288,10 @@ export class OrdersService {
       }
     })
 
-    // Confirmation email (fire-and-forget)
-    if (dto.email) {
+    // Confirmation email (fire-and-forget). Admin/staff-created orders skip
+    // this — the customer is only emailed later when the tracking code is
+    // set (sendOrderShipping), not at creation time.
+    if (dto.email && !adminOptions) {
       this.mail
         .sendOrderCreated({
           to: dto.email,
@@ -286,7 +312,7 @@ export class OrdersService {
     }
 
     // Create PayOS payment link
-    if (!this.payos || dto.paymentMethod === PaymentMethod.COD) {
+    if (!this.payos || dto.paymentMethod === PaymentMethod.COD || isPrepaid) {
       return { orderId: order.id, total }
     }
 
@@ -503,7 +529,10 @@ export class OrdersService {
 
     let rowIndex = 2
     for (const order of orders) {
-      const isCod = order.paymentMethod === PaymentMethod.COD
+      // Đơn COD nhưng khách đã thanh toán trước thì không còn tiền để thu hộ
+      // khi giao hàng nữa, nên coi như không phải COD với đơn vị vận chuyển.
+      const isCod =
+        order.paymentMethod === PaymentMethod.COD && !order.isPrepaid
       const weightKg = order.weight ? order.weight / 1000 : null
       const address = order.address
       const productLabel = order.items
@@ -545,7 +574,9 @@ export class OrdersService {
         isCod ? 'Y' : 'N',
         isCod ? Number(order.subtotal) : null,
         'N',
-        isCod ? 'Người nhận trả' : 'Người gửi trả',
+        order.shippingPayer === ShippingPayer.SENDER
+          ? 'Người gửi trả'
+          : 'Người nhận trả',
         order.note
       ]
       values.forEach((value, i) => {
@@ -582,6 +613,8 @@ export class OrdersService {
       status: order.status,
       paymentMethod: order.paymentMethod,
       paymentStatus: order.payment?.status ?? null,
+      isPrepaid: order.isPrepaid,
+      shippingPayer: order.shippingPayer,
       note: order.note,
       trackingCode: order.trackingCode,
       subtotal: Number(order.subtotal),
@@ -610,12 +643,78 @@ export class OrdersService {
     }
   }
 
-  async updateOrderStatus(orderId: number, status: string) {
-    return this.prisma.order.update({
+  async updateOrderStatus(
+    orderId: number,
+    status: string,
+    trackingCode?: string
+  ) {
+    const nextStatus = status as OrderStatus
+
+    if (nextStatus !== OrderStatus.SHIPPING) {
+      return this.prisma.order.update({
+        where: { id: orderId },
+        data: { status: nextStatus },
+        select: { id: true, status: true }
+      })
+    }
+
+    // Chuyển sang "Đang giao" bắt buộc phải có mã vận đơn, và kèm gửi lại
+    // email cho khách hàng để họ yên tâm về đơn hàng.
+    const code = trackingCode?.trim()
+    if (!code) {
+      throw new BadRequestException('Vui lòng nhập mã vận đơn')
+    }
+
+    const order = await this.prisma.order.findUnique({
       where: { id: orderId },
-      data: { status: status as OrderStatus },
-      select: { id: true, status: true }
+      include: { address: true, items: { orderBy: { id: 'asc' } } }
     })
+    if (!order) throw new BadRequestException('Đơn hàng không tồn tại')
+
+    let updated: {
+      id: number
+      status: OrderStatus
+      trackingCode: string | null
+    }
+    try {
+      updated = await this.prisma.order.update({
+        where: { id: orderId },
+        data: { status: nextStatus, trackingCode: code },
+        select: { id: true, status: true, trackingCode: true }
+      })
+    } catch (err) {
+      if (
+        err instanceof Prisma.PrismaClientKnownRequestError &&
+        err.code === 'P2002'
+      ) {
+        throw new BadRequestException(
+          'Mã vận đơn này đã được sử dụng cho đơn hàng khác'
+        )
+      }
+      throw err
+    }
+
+    if (order.address.email) {
+      this.mail
+        .sendOrderShipping({
+          to: order.address.email,
+          customerName: order.address.fullName,
+          orderId: order.id,
+          trackingCode: code,
+          carrier: carrierFromTrackingCode(code),
+          address: order.address.detail,
+          items: order.items.map((i) => ({
+            name: i.name,
+            sku: i.sku,
+            quantity: i.quantity,
+            price: Number(i.price)
+          })),
+          total: Number(order.total)
+        })
+        .catch(() => {})
+    }
+
+    return updated
   }
 
   async handlePaymentWebhook(body: Record<string, unknown>) {

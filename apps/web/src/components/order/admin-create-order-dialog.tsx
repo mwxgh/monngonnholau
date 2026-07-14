@@ -73,7 +73,9 @@ const schema = z.object({
   ward: z.string().min(1, 'Vui lòng chọn phường/xã'),
   street: z.string().min(1, 'Vui lòng nhập số nhà, tên đường'),
   note: z.string().optional(),
-  paymentMethod: z.enum(['COD', 'ONLINE'])
+  paymentMethod: z.enum(['COD', 'ONLINE']),
+  isPrepaid: z.boolean(),
+  shippingPayer: z.enum(['SENDER', 'RECEIVER'])
 })
 
 type FormValues = z.infer<typeof schema>
@@ -163,7 +165,9 @@ export function AdminCreateOrderDialog({
       ward: '',
       street: '',
       note: '',
-      paymentMethod: 'COD'
+      paymentMethod: 'COD',
+      isPrepaid: false,
+      shippingPayer: 'RECEIVER'
     }
   })
 
@@ -294,7 +298,9 @@ export function AdminCreateOrderDialog({
             street: values.street,
             note: values.note || undefined,
             items: cartItems.map((i) => ({ sku: i.sku, qty: i.qty })),
-            paymentMethod: values.paymentMethod
+            paymentMethod: values.paymentMethod,
+            isPrepaid: values.isPrepaid,
+            shippingPayer: values.shippingPayer
           })
         }
       )
@@ -632,6 +638,84 @@ export function AdminCreateOrderDialog({
                           )}
                         >
                           Online (QR)
+                        </button>
+                      </div>
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              {/* Prepaid */}
+              <FormField
+                control={form.control}
+                name="isPrepaid"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormControl>
+                      <button
+                        type="button"
+                        onClick={() => field.onChange(!field.value)}
+                        className={cn(
+                          'flex w-full items-center justify-between rounded-lg border h-9 px-3 text-sm font-medium transition-colors',
+                          field.value
+                            ? 'border-primary bg-primary/5 text-primary ring-1 ring-primary'
+                            : 'border-border text-muted-foreground hover:border-primary/40'
+                        )}
+                      >
+                        <span>Khách hàng đã thanh toán trước</span>
+                        <span
+                          className={cn(
+                            'flex h-5 w-9 items-center rounded-full transition-colors shrink-0',
+                            field.value ? 'bg-primary' : 'bg-neutral-300'
+                          )}
+                        >
+                          <span
+                            className={cn(
+                              'h-4 w-4 rounded-full bg-white shadow transition-transform',
+                              field.value ? 'translate-x-4.5' : 'translate-x-0.5'
+                            )}
+                          />
+                        </span>
+                      </button>
+                    </FormControl>
+                  </FormItem>
+                )}
+              />
+
+              {/* Shipping payer */}
+              <FormField
+                control={form.control}
+                name="shippingPayer"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel className="text-sm font-medium text-neutral-700">
+                      Người trả phí vận chuyển
+                    </FormLabel>
+                    <FormControl>
+                      <div className="grid grid-cols-2 gap-2">
+                        <button
+                          type="button"
+                          onClick={() => field.onChange('RECEIVER')}
+                          className={cn(
+                            'h-9 rounded-lg border text-sm font-medium transition-colors',
+                            field.value === 'RECEIVER'
+                              ? 'border-primary bg-primary/5 text-primary ring-1 ring-primary'
+                              : 'border-border text-muted-foreground hover:border-primary/40'
+                          )}
+                        >
+                          Người nhận trả
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => field.onChange('SENDER')}
+                          className={cn(
+                            'h-9 rounded-lg border text-sm font-medium transition-colors',
+                            field.value === 'SENDER'
+                              ? 'border-primary bg-primary/5 text-primary ring-1 ring-primary'
+                              : 'border-border text-muted-foreground hover:border-primary/40'
+                          )}
+                        >
+                          Người gửi trả
                         </button>
                       </div>
                     </FormControl>

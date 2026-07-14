@@ -17,6 +17,7 @@ import {
   DialogTitle
 } from '@/components/ui/dialog'
 import { AdminCreateOrderDialog } from '@/components/order/admin-create-order-dialog'
+import { ShipOrderDialog } from '@/components/order/ship-order-dialog'
 
 interface AdminOrder {
   id: number
@@ -143,10 +144,16 @@ export default function AdminOrdersPage() {
   const [detailId, setDetailId] = useState<number | null>(null)
   const [advancing, setAdvancing] = useState<number | null>(null)
   const [creating, setCreating] = useState(false)
+  const [shippingOrderId, setShippingOrderId] = useState<number | null>(null)
+  const [detailRefreshToken, setDetailRefreshToken] = useState(0)
 
   async function quickAdvance(order: AdminOrder) {
     const next = NEXT_STATUSES[order.status]?.[0]
     if (!next) return
+    if (next === 'SHIPPING') {
+      setShippingOrderId(order.id)
+      return
+    }
     setAdvancing(order.id)
     try {
       const res = await fetchAdmin(
@@ -411,12 +418,25 @@ export default function AdminOrdersPage() {
             prev.map((o) => (o.id === id ? { ...o, status } : o))
           )
         }}
+        onRequestShip={(id) => setShippingOrderId(id)}
+        refreshToken={detailRefreshToken}
       />
 
       <AdminCreateOrderDialog
         open={creating}
         onClose={() => setCreating(false)}
         onCreated={loadOrders}
+      />
+
+      <ShipOrderDialog
+        orderId={shippingOrderId}
+        onClose={() => setShippingOrderId(null)}
+        onShipped={(id, status) => {
+          setOrders((prev) =>
+            prev.map((o) => (o.id === id ? { ...o, status } : o))
+          )
+          if (id === detailId) setDetailRefreshToken((t) => t + 1)
+        }}
       />
     </div>
   )
@@ -425,11 +445,15 @@ export default function AdminOrdersPage() {
 function OrderDetailDialog({
   orderId,
   onClose,
-  onStatusUpdated
+  onStatusUpdated,
+  onRequestShip,
+  refreshToken
 }: {
   orderId: number | null
   onClose: () => void
   onStatusUpdated: (id: number, status: string) => void
+  onRequestShip: (id: number) => void
+  refreshToken: number
 }) {
   const [detail, setDetail] = useState<OrderDetail | null>(null)
   const [error, setError] = useState('')
@@ -447,7 +471,7 @@ function OrderDetailDialog({
         setDetail(data)
       })
       .catch((e) => setError(e.message))
-  }, [orderId])
+  }, [orderId, refreshToken])
 
   async function changeStatus(status: string) {
     if (!detail) return
@@ -503,7 +527,14 @@ function OrderDetailDialog({
                   disabled={updating}
                   defaultValue=""
                   onChange={(e) => {
-                    if (e.target.value) changeStatus(e.target.value)
+                    const value = e.target.value
+                    if (!value) return
+                    if (value === 'SHIPPING') {
+                      onRequestShip(detail.id)
+                      e.target.value = ''
+                      return
+                    }
+                    changeStatus(value)
                   }}
                   className="text-xs border border-border rounded-md px-2 py-1 bg-background disabled:opacity-50 cursor-pointer"
                 >
